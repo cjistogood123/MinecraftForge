@@ -923,6 +923,9 @@ tasks.register('mdkZip', Zip) {
         rename 'gitignore\\.txt', '.gitignore'
         rename 'gitattributes\\.txt', '.gitattributes'
     }
+    from(rootProject.file('src/test/java/net/minecraftforge/example/')) {
+        into('src/main/java/net/minecraftforge/example/')
+    }
     from(rootProject.file('src/test/generated/mdk_datagen/')) {
         into('src/main/resources/')
         exclude '**/.cache/'
