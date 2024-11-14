@@ -247,26 +247,32 @@ public class GameData {
     }
 
     @SuppressWarnings("deprecation")
-    public static void unfreezeData()
-    {
+    public static void unfreezeData() {
         LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
         BuiltInRegistries.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).unfreeze());
     }
 
-    public static void freezeData()
-    {
+    public static void freezeData() {
         LOGGER.debug(REGISTRIES, "Freezing registries");
-        BuiltInRegistries.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).freeze());
-
-        for (Map.Entry<ResourceLocation, ForgeRegistry<?>> r : RegistryManager.ACTIVE.registries.entrySet())
-        {
-            loadRegistry(r.getKey(), RegistryManager.ACTIVE, RegistryManager.FROZEN, true);
+        for (var reg : BuiltInRegistries.REGISTRY) {
+            if (reg instanceof NamespacedWrapper<?> named) {
+                // This is called after we fire our register events, but before doesn't load any tags.
+                // So lets skip the validation for this pass and just make every unbound tag empty
+                // Tags will be bound later when tag data is reloaded/synced
+                named.bindAllUnboundTagsToEmpty();
+                named.freeze();
+            } else if (reg instanceof MappedRegistry maped)
+                maped.freeze();
         }
-        RegistryManager.FROZEN.registries.forEach((name, reg) ->
-        {
+
+        for (var r : RegistryManager.ACTIVE.registries.entrySet())
+            loadRegistry(r.getKey(), RegistryManager.ACTIVE, RegistryManager.FROZEN, true);
+
+        RegistryManager.FROZEN.registries.forEach((name, reg) -> {
             reg.validateContent(name);
             reg.freeze();
         });
+
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> {
             reg.freeze();
             reg.bake();
@@ -764,6 +770,7 @@ public class GameData {
         int index = name.lastIndexOf(':');
         String oldPrefix = index == -1 ? "" : name.substring(0, index).toLowerCase(Locale.ROOT);
         name = index == -1 ? name : name.substring(index + 1);
+        @SuppressWarnings("removal")
         String prefix = ModLoadingContext.get().getActiveNamespace();
         if (warnOverrides && !oldPrefix.equals(prefix) && !oldPrefix.isEmpty())
         {
