@@ -90,6 +90,7 @@ public class GameData {
     private static boolean hasInit = false;
     private static final boolean DISABLE_VANILLA_REGISTRIES = Boolean.parseBoolean(System.getProperty("forge.disableVanillaGameData", "false")); // Use for unit tests/debugging
     private static final BiConsumer<ResourceLocation, ForgeRegistry<?>> LOCK_VANILLA = (name, reg) -> reg.slaves.values().stream().filter(o -> o instanceof ILockableRegistry).forEach(o -> ((ILockableRegistry)o).lock());
+    private static Set<ResourceLocation> vanillaRegistryOrder = null;
 
     static {
         init();
@@ -229,27 +230,35 @@ public class GameData {
         }
     }
 
-    public static void vanillaSnapshot()
-    {
+    public static void vanillaSnapshot() {
         LOGGER.debug(REGISTRIES, "Creating vanilla freeze snapshot");
-        for (Map.Entry<ResourceLocation, ForgeRegistry<?>> r : RegistryManager.ACTIVE.registries.entrySet())
-        {
+        for (var r : RegistryManager.ACTIVE.registries.entrySet())
             loadRegistry(r.getKey(), RegistryManager.ACTIVE, RegistryManager.VANILLA, true);
-        }
-        RegistryManager.VANILLA.registries.forEach((name, reg) ->
-        {
+
+        RegistryManager.VANILLA.registries.forEach((name, reg) -> {
             reg.validateContent(name);
             reg.freeze();
         });
+
         RegistryManager.VANILLA.registries.forEach(LOCK_VANILLA);
         RegistryManager.ACTIVE.registries.forEach(LOCK_VANILLA);
+
+        // Capture the vanilla registry order.
+        vanillaRegistryOrder = new LinkedHashSet<>(MappedRegistry.getKnownRegistries());
+        LOGGER.debug(REGISTRIES, "Vanilla registry order:");
+        for (var key : vanillaRegistryOrder)
+            LOGGER.info(REGISTRIES, "\t" + key);
+        System.exit(0);
         LOGGER.debug(REGISTRIES, "Vanilla freeze snapshot created");
     }
 
     @SuppressWarnings("deprecation")
     public static void unfreezeData() {
         LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
-        BuiltInRegistries.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).unfreeze());
+        for (var reg : BuiltInRegistries.REGISTRY) {
+            if (reg instanceof MappedRegistry mapped)
+                mapped.unfreeze();
+        }
     }
 
     public static void freezeData() {
@@ -289,20 +298,17 @@ public class GameData {
         revertTo(RegistryManager.FROZEN, true);
     }
 
-    public static void revertTo(final RegistryManager target, boolean fireEvents)
-    {
-        if (target.registries.isEmpty())
-        {
+    public static void revertTo(final RegistryManager target, boolean fireEvents) {
+        if (target.registries.isEmpty()) {
             LOGGER.warn(REGISTRIES, "Can't revert to {} GameData state without a valid snapshot.", target.getName());
             return;
         }
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> reg.resetDelegates());
 
         LOGGER.debug(REGISTRIES, "Reverting to {} data state.", target.getName());
-        for (Map.Entry<ResourceLocation, ForgeRegistry<?>> r : RegistryManager.ACTIVE.registries.entrySet())
-        {
+        for (var r : RegistryManager.ACTIVE.registries.entrySet())
             loadRegistry(r.getKey(), target, RegistryManager.ACTIVE, true);
-        }
+
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> reg.bake());
         // the id mapping has reverted, fire remap events for those that care about id changes
         if (fireEvents) {
@@ -314,8 +320,7 @@ public class GameData {
         LOGGER.debug(REGISTRIES, "{} state restored.", target.getName());
     }
 
-    public static void revert(RegistryManager state, ResourceLocation registry, boolean lock)
-    {
+    public static void revert(RegistryManager state, ResourceLocation registry, boolean lock) {
         LOGGER.debug(REGISTRIES, "Reverting {} to {}", registry, state.getName());
         loadRegistry(registry, state, RegistryManager.ACTIVE, lock);
         LOGGER.debug(REGISTRIES, "Reverting complete");
@@ -326,7 +331,7 @@ public class GameData {
         Set<ResourceLocation> keySet = new HashSet<>(RegistryManager.ACTIVE.registries.keySet());
         keySet.addAll(RegistryManager.getVanillaRegistryKeys());
 
-        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistry.getKnownRegistries());
+        Set<ResourceLocation> ordered = new LinkedHashSet<>(vanillaRegistryOrder);
         ordered.retainAll(keySet);
         ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
 
@@ -354,8 +359,7 @@ public class GameData {
             }
         }
 
-        if (aggregate.getSuppressed().length > 0)
-        {
+        if (aggregate.getSuppressed().length > 0) {
             LOGGER.fatal("Failed to register some entries, see suppressed exceptions for details", aggregate);
             LOGGER.fatal("Detected errors during registry event dispatch, rolling back to VANILLA state");
             revertTo(RegistryManager.VANILLA, false);
@@ -369,18 +373,15 @@ public class GameData {
     }
 
     //Lets us clear the map so we can rebuild it.
-    private static class ClearableObjectIntIdentityMap<I> extends IdMapper<I>
-    {
-        void clear()
-        {
+    private static class ClearableObjectIntIdentityMap<I> extends IdMapper<I> {
+        void clear() {
             this.tToId.clear();
             this.idToT.clear();
             this.nextId = 0;
         }
 
         @SuppressWarnings("unused")
-        void remove(I key)
-        {
+        void remove(I key) {
             boolean hadId = this.tToId.containsKey(key);
             int prev = this.tToId.removeInt(key);
             if (hadId) {
@@ -468,13 +469,11 @@ public class GameData {
 
         @Override
         public void onAdd(IForgeRegistryInternal<Item> owner, RegistryManager stage, int id, ResourceKey<Item> key, Item item, @Nullable Item oldItem) {
-            if (oldItem instanceof BlockItem block) {
+            if (oldItem instanceof BlockItem block)
                 block.removeFromBlockToItemMap(owner.getSlaveMap(BLOCK_TO_ITEM), item);
-            }
 
-            if (item instanceof BlockItem block) {
+            if (item instanceof BlockItem block)
                 block.registerBlocks(owner.getSlaveMap(BLOCK_TO_ITEM), item);
-            }
         }
 
         @Override
@@ -494,7 +493,8 @@ public class GameData {
         @Override
         public void onValidate(IForgeRegistryInternal<Attribute> owner, RegistryManager stage, int id, ResourceLocation key, Attribute obj) {
             // some stuff hard patched in can cause this to derp if it's JUST vanilla, so skip
-            if (stage!=RegistryManager.VANILLA) DefaultAttributes.validate();
+            if (stage != RegistryManager.VANILLA)
+                DefaultAttributes.validate();
         }
     }
 
@@ -509,20 +509,17 @@ public class GameData {
         @Override
         public void onAdd(IForgeRegistryInternal<PoiType> owner, RegistryManager stage, int id, ResourceKey<PoiType> key, PoiType obj, @Nullable PoiType oldObj) {
             var map = owner.getSlaveMap(STATE_TO_POI);
-            if (oldObj != null) {
+            if (oldObj != null)
                 oldObj.matchingStates().forEach(map::remove);
-            }
 
             var holder = owner.getHolder(obj).orElse(null);
-            if (holder == null) {
+            if (holder == null)
                 throw new IllegalStateException("Could not get holder for " + key + " " + obj);
-            }
 
             for (BlockState state : obj.matchingStates()) {
                 var oldType = map.put(state, holder);
-                if (oldType != null) {
+                if (oldType != null)
                     throw new IllegalStateException(String.format(Locale.ENGLISH, "Point of interest types %s and %s both list %s in their blockstates, this is not allowed. Blockstates can only have one point of interest type each.", oldType, obj, state));
-                }
             }
         }
 
@@ -537,19 +534,15 @@ public class GameData {
         }
     }
 
-    private static <T> void loadRegistry(final ResourceLocation registryName, final RegistryManager from, final RegistryManager to, boolean freeze)
-    {
+    private static <T> void loadRegistry(final ResourceLocation registryName, final RegistryManager from, final RegistryManager to, boolean freeze) {
         ForgeRegistry<T> fromRegistry = from.getRegistry(registryName);
-        if (fromRegistry == null)
-        {
+        if (fromRegistry == null) {
             ForgeRegistry<T> toRegistry = to.getRegistry(registryName);
-            if (toRegistry == null)
-            {
+            if (toRegistry == null) {
                 throw new EnhancedRuntimeException("Could not find registry to load: " + registryName){
                     private static final long serialVersionUID = 1L;
                     @Override
-                    protected void printStackTrace(WrappedPrintStream stream)
-                    {
+                    protected void printStackTrace(WrappedPrintStream stream) {
                         stream.println("Looking For: " + registryName);
                         stream.println("Found From:");
                         for (ResourceLocation name : from.registries.keySet())
@@ -566,9 +559,7 @@ public class GameData {
             // We must however, re-fire the callbacks as some internal data may be corrupted {potions}
             //TODO: With my rework of how registries add callbacks are done.. I don't think this is necessary.
             //fire addCallback for each entry
-        }
-        else
-        {
+        } else {
             ForgeRegistry<T> toRegistry = to.getRegistry(registryName, from);
             toRegistry.sync(registryName, fromRegistry);
             if (freeze)
@@ -577,8 +568,7 @@ public class GameData {
     }
 
 
-    public static Multimap<ResourceLocation, ResourceLocation> injectSnapshot(Map<ResourceLocation, ForgeRegistry.Snapshot> snapshot, boolean injectFrozenData, boolean isLocalWorld)
-    {
+    public static Multimap<ResourceLocation, ResourceLocation> injectSnapshot(Map<ResourceLocation, ForgeRegistry.Snapshot> snapshot, boolean injectFrozenData, boolean isLocalWorld) {
         LOGGER.info(REGISTRIES, "Injecting existing registry data into this {} instance", EffectiveSide.get());
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> reg.validateContent(name));
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> reg.dump(name));
@@ -589,8 +579,7 @@ public class GameData {
                 .sorted(Map.Entry.comparingByKey()) // FIXME Registries need dependency ordering, this makes sure blocks are done before items (for ItemCallbacks) but it's lazy as hell
                 .collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
 
-        if (isLocalWorld)
-        {
+        if (isLocalWorld) {
             ResourceLocation[] missingRegs = snapshot.keySet().stream().filter(name -> !RegistryManager.ACTIVE.registries.containsKey(name)).toArray(ResourceLocation[]::new);
             if (missingRegs.length > 0)
             {
@@ -614,22 +603,19 @@ public class GameData {
         final Map<ResourceLocation, Map<ResourceLocation, IdMappingEvent.IdRemapping>> remaps = new HashMap<>();
         final LinkedHashMap<ResourceLocation, Object2IntMap<ResourceLocation>> missing = new LinkedHashMap<>();
         // Load the snapshot into the "STAGING" registry
-        snapshot.forEach((key, value) ->
-        {
+        snapshot.forEach((key, value) -> {
             remaps.put(key, new LinkedHashMap<>());
             missing.put(key, new Object2IntLinkedOpenHashMap<>());
             loadPersistentDataToStagingRegistry(RegistryManager.ACTIVE, STAGING, remaps.get(key), missing.get(key), key, value);
         });
 
         int count = missing.values().stream().mapToInt(Map::size).sum();
-        if (count > 0)
-        {
+        if (count > 0) {
             LOGGER.debug(REGISTRIES,"There are {} mappings missing - attempting a mod remap", count);
             Multimap<ResourceLocation, ResourceLocation> defaulted = ArrayListMultimap.create();
             Multimap<ResourceLocation, ResourceLocation> failed = ArrayListMultimap.create();
 
-            missing.entrySet().stream().filter(e -> !e.getValue().isEmpty()).forEach(m ->
-            {
+            missing.entrySet().stream().filter(e -> !e.getValue().isEmpty()).forEach(m -> {
                 ResourceLocation name = m.getKey();
                 ForgeRegistry<?> reg = STAGING.getRegistry(name);
                 Object2IntMap<ResourceLocation> missingIds = m.getValue();
@@ -640,8 +626,7 @@ public class GameData {
                         .filter(e -> e.action == MissingMappingsEvent.Action.DEFAULT)
                         .sorted(Comparator.comparing(Object::toString))
                         .collect(Collectors.toList());
-                if (!lst.isEmpty())
-                {
+                if (!lst.isEmpty()) {
                     LOGGER.error(REGISTRIES, () -> LogMessageAdapter.adapt(sb -> {
                        sb.append("Unidentified mapping from registry ").append(name).append('\n');
                        lst.stream().sorted().forEach(map -> sb.append('\t').append(map.key).append(": ").append(map.id).append('\n'));
@@ -657,16 +642,14 @@ public class GameData {
             if (!defaulted.isEmpty() && !isLocalWorld)
                 return defaulted;
 
-            if (!defaulted.isEmpty())
-            {
+            if (!defaulted.isEmpty()) {
                 String header = "Forge Mod Loader detected missing registry entries.\n\n" +
                    "There are " + defaulted.size() + " missing entries in this save.\n" +
                    "If you continue the missing entries will get removed.\n" +
                    "A world backup will be automatically created in your saves directory.\n\n";
 
                 StringBuilder buf = new StringBuilder();
-                defaulted.asMap().forEach((name, entries) ->
-                {
+                defaulted.asMap().forEach((name, entries) -> {
                     buf.append("Missing ").append(name).append(":\n");
                     entries.stream().sorted(ResourceLocation::compareNamespaced).forEach(rl -> buf.append("    ").append(rl).append("\n"));
                     buf.append("\n");
@@ -676,20 +659,17 @@ public class GameData {
                 LOGGER.warn(REGISTRIES, buf.toString());
             }
 
-            if (!defaulted.isEmpty())
-            {
+            if (!defaulted.isEmpty()) {
                 if (isLocalWorld)
                     LOGGER.error(REGISTRIES, "There are unidentified mappings in this world - we are going to attempt to process anyway");
             }
 
         }
 
-        if (injectFrozenData)
-        {
+        if (injectFrozenData) {
             // If we're loading up the world from disk, we want to add in the new data that might have been provisioned by mods
             // So we load it from the frozen persistent registry
-            RegistryManager.ACTIVE.registries.forEach((name, reg) ->
-            {
+            RegistryManager.ACTIVE.registries.forEach((name, reg) -> {
                 loadFrozenDataToStagingRegistry(STAGING, name, remaps.get(name));
             });
         }
@@ -699,14 +679,12 @@ public class GameData {
 
         // Load the STAGING registry into the ACTIVE registry
         //for (Map.Entry<ResourceLocation, IForgeRegistry<?>>> r : RegistryManager.ACTIVE.registries.entrySet())
-        RegistryManager.ACTIVE.registries.forEach((key, value) ->
-        {
+        RegistryManager.ACTIVE.registries.forEach((key, value) -> {
             loadRegistry(key, STAGING, RegistryManager.ACTIVE, true);
         });
 
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> {
             reg.bake();
-
             // Dump the active registry
             reg.dump(name);
         });
@@ -726,8 +704,7 @@ public class GameData {
     }
 
     //Has to be split because of generics, Yay!
-    private static <T> void loadPersistentDataToStagingRegistry(RegistryManager pool, RegistryManager to, Map<ResourceLocation, IdMappingEvent.IdRemapping> remaps, Object2IntMap<ResourceLocation> missing, ResourceLocation name, ForgeRegistry.Snapshot snap)
-    {
+    private static <T> void loadPersistentDataToStagingRegistry(RegistryManager pool, RegistryManager to, Map<ResourceLocation, IdMappingEvent.IdRemapping> remaps, Object2IntMap<ResourceLocation> missing, ResourceLocation name, ForgeRegistry.Snapshot snap) {
         ForgeRegistry<T> active  = pool.getRegistry(name);
         if (active == null)
             return; // We've already asked the user if they wish to continue. So if the reg isnt found just assume the user knows and accepted it.
@@ -738,16 +715,14 @@ public class GameData {
     }
 
     //Another bouncer for generic reasons
-    private static <T> void processMissing(ResourceLocation name, RegistryManager STAGING, MissingMappingsEvent e, Object2IntMap<ResourceLocation> missing, Map<ResourceLocation, IdMappingEvent.IdRemapping> remaps, Collection<ResourceLocation> defaulted, Collection<ResourceLocation> failed, boolean injectNetworkDummies)
-    {
+    private static <T> void processMissing(ResourceLocation name, RegistryManager STAGING, MissingMappingsEvent e, Object2IntMap<ResourceLocation> missing, Map<ResourceLocation, IdMappingEvent.IdRemapping> remaps, Collection<ResourceLocation> defaulted, Collection<ResourceLocation> failed, boolean injectNetworkDummies) {
         List<MissingMappingsEvent.Mapping<T>> mappings = e.getAllMappings(ResourceKey.createRegistryKey(name));
         ForgeRegistry<T> active = RegistryManager.ACTIVE.getRegistry(name);
         ForgeRegistry<T> staging = STAGING.getRegistry(name);
         staging.processMissingEvent(name, active, mappings, missing, remaps, defaulted, failed, injectNetworkDummies);
     }
 
-    private static <T> void loadFrozenDataToStagingRegistry(RegistryManager STAGING, ResourceLocation name, Map<ResourceLocation, IdMappingEvent.IdRemapping> remaps)
-    {
+    private static <T> void loadFrozenDataToStagingRegistry(RegistryManager STAGING, ResourceLocation name, Map<ResourceLocation, IdMappingEvent.IdRemapping> remaps) {
         ForgeRegistry<T> frozen = RegistryManager.FROZEN.getRegistry(name);
         ForgeRegistry<T> newRegistry = STAGING.getRegistry(name, RegistryManager.FROZEN);
         Object2IntMap<ResourceLocation> _new = new Object2IntLinkedOpenHashMap<>();
@@ -765,15 +740,13 @@ public class GameData {
      *
      * @return The {@link ResourceLocation} with given or inferred domain
      */
-    public static ResourceLocation checkPrefix(String name, boolean warnOverrides)
-    {
+    public static ResourceLocation checkPrefix(String name, boolean warnOverrides) {
         int index = name.lastIndexOf(':');
         String oldPrefix = index == -1 ? "" : name.substring(0, index).toLowerCase(Locale.ROOT);
         name = index == -1 ? name : name.substring(index + 1);
         @SuppressWarnings("removal")
         String prefix = ModLoadingContext.get().getActiveNamespace();
-        if (warnOverrides && !oldPrefix.equals(prefix) && !oldPrefix.isEmpty())
-        {
+        if (warnOverrides && !oldPrefix.equals(prefix) && !oldPrefix.isEmpty()) {
             LogManager.getLogger().debug("Mod `{}` attempting to register `{}` to the namespace `{}`. This could be intended, but likely means an EventBusSubscriber without a modid.", prefix, name, oldPrefix);
             prefix = oldPrefix;
         }

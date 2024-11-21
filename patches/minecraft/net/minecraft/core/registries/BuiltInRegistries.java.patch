@@ -11,7 +11,7 @@
          WRITABLE_REGISTRY.register((ResourceKey)p_259230_, p_260327_, RegistrationInfo.BUILT_IN);
          return p_260327_;
      }
-@@ -282,7 +_,7 @@
+@@ -257,6 +_,8 @@
  
              if (p_358159_ instanceof DefaultedRegistry) {
                  ResourceLocation resourcelocation = ((DefaultedRegistry)p_358159_).getDefaultKey();
