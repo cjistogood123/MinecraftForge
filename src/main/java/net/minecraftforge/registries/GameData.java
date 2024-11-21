@@ -248,7 +248,6 @@ public class GameData {
         LOGGER.debug(REGISTRIES, "Vanilla registry order:");
         for (var key : vanillaRegistryOrder)
             LOGGER.info(REGISTRIES, "\t" + key);
-        System.exit(0);
         LOGGER.debug(REGISTRIES, "Vanilla freeze snapshot created");
     }
 
