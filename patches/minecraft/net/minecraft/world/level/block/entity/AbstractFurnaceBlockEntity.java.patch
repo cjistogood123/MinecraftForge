@@ -1,14 +1,14 @@
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-@@ -54,6 +_,7 @@
+@@ -53,6 +_,7 @@
+     public static final int NUM_DATA_VALUES = 4;
      public static final int BURN_TIME_STANDARD = 200;
      public static final int BURN_COOL_SPEED = 2;
-     public static final int UNKNOWN_LIT_DURATION = 0;
 +    private final RecipeType<? extends AbstractCookingRecipe> recipeType;
      protected NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
-     int litTime;
-     int litDuration = 0;
-@@ -106,6 +_,7 @@
+     int litTimeRemaining;
+     int litTotalTime;
+@@ -105,6 +_,7 @@
      ) {
          super(p_154991_, p_154992_, p_154993_);
          this.quickCheck = RecipeManager.createCheck((RecipeType)p_154994_);
@@ -16,40 +16,44 @@
      }
  
      private boolean isLit() {
-@@ -117,9 +_,9 @@
+@@ -116,10 +_,10 @@
          super.loadAdditional(p_335441_, p_330623_);
          this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
          ContainerHelper.loadAllItems(p_335441_, this.items, p_330623_);
--        this.litTime = p_335441_.getShort("BurnTime");
--        this.cookingProgress = p_335441_.getShort("CookTime");
--        this.cookingTotalTime = p_335441_.getShort("CookTimeTotal");
-+        this.litTime = p_335441_.getInt("BurnTime");
-+        this.cookingProgress = p_335441_.getInt("CookTime");
-+        this.cookingTotalTime = p_335441_.getInt("CookTimeTotal");
-         this.litDuration = 0;
+-        this.cookingTimer = p_335441_.getShort("cooking_time_spent");
+-        this.cookingTotalTime = p_335441_.getShort("cooking_total_time");
+-        this.litTimeRemaining = p_335441_.getShort("lit_time_remaining");
+-        this.litTotalTime = p_335441_.getShort("lit_total_time");
++        this.cookingTimer = p_335441_.getInt("cooking_time_spent");
++        this.cookingTotalTime = p_335441_.getInt("cooking_total_time");
++        this.litTimeRemaining = p_335441_.getInt("lit_time_remaining");
++        this.litTotalTime = p_335441_.getInt("lit_total_time");
          CompoundTag compoundtag = p_335441_.getCompound("RecipesUsed");
  
-@@ -131,9 +_,9 @@
+         for (String s : compoundtag.getAllKeys()) {
+@@ -130,10 +_,10 @@
      @Override
      protected void saveAdditional(CompoundTag p_187452_, HolderLookup.Provider p_330192_) {
          super.saveAdditional(p_187452_, p_330192_);
--        p_187452_.putShort("BurnTime", (short)this.litTime);
--        p_187452_.putShort("CookTime", (short)this.cookingProgress);
--        p_187452_.putShort("CookTimeTotal", (short)this.cookingTotalTime);
-+        p_187452_.putInt("BurnTime", this.litTime);
-+        p_187452_.putInt("CookTime", this.cookingProgress);
-+        p_187452_.putInt("CookTimeTotal", this.cookingTotalTime);
+-        p_187452_.putShort("cooking_time_spent", (short)this.cookingTimer);
+-        p_187452_.putShort("cooking_total_time", (short)this.cookingTotalTime);
+-        p_187452_.putShort("lit_time_remaining", (short)this.litTimeRemaining);
+-        p_187452_.putShort("lit_total_time", (short)this.litTotalTime);
++        p_187452_.putInt("cooking_time_spent", this.cookingTimer);
++        p_187452_.putInt("cooking_total_time", this.cookingTotalTime);
++        p_187452_.putInt("lit_time_remaining", this.litTimeRemaining);
++        p_187452_.putInt("lit_total_time", this.litTotalTime);
          ContainerHelper.saveAllItems(p_187452_, this.items, p_330192_);
          CompoundTag compoundtag = new CompoundTag();
          this.recipesUsed.forEach((p_360478_, p_360479_) -> compoundtag.putInt(p_360478_.location().toString(), p_360479_));
-@@ -165,27 +_,31 @@
+@@ -161,27 +_,31 @@
              }
  
              int i = p_155017_.getMaxStackSize();
 -            if (!p_155017_.isLit() && canBurn(p_364207_.registryAccess(), recipeholder, singlerecipeinput, p_155017_.items, i)) {
 +            if (!p_155017_.isLit() && p_155017_.canBurn(p_364207_.registryAccess(), recipeholder, singlerecipeinput, p_155017_.items, i)) {
-                 p_155017_.litTime = p_155017_.getBurnDuration(p_364207_.fuelValues(), itemstack);
-                 p_155017_.litDuration = p_155017_.litTime;
+                 p_155017_.litTimeRemaining = p_155017_.getBurnDuration(p_364207_.fuelValues(), itemstack);
+                 p_155017_.litTotalTime = p_155017_.litTimeRemaining;
                  if (p_155017_.isLit()) {
                      flag1 = true;
 +                    var remainder = itemstack.getCraftingRemainder();
@@ -69,16 +73,16 @@
  
 -            if (p_155017_.isLit() && canBurn(p_364207_.registryAccess(), recipeholder, singlerecipeinput, p_155017_.items, i)) {
 +            if (p_155017_.isLit() && p_155017_.canBurn(p_364207_.registryAccess(), recipeholder, singlerecipeinput, p_155017_.items, i)) {
-                 p_155017_.cookingProgress++;
-                 if (p_155017_.cookingProgress == p_155017_.cookingTotalTime) {
-                     p_155017_.cookingProgress = 0;
+                 p_155017_.cookingTimer++;
+                 if (p_155017_.cookingTimer == p_155017_.cookingTotalTime) {
+                     p_155017_.cookingTimer = 0;
                      p_155017_.cookingTotalTime = getTotalCookTime(p_364207_, p_155017_);
 -                    if (burn(p_364207_.registryAccess(), recipeholder, singlerecipeinput, p_155017_.items, i)) {
 +                    if (p_155017_.burn(p_364207_.registryAccess(), recipeholder, singlerecipeinput, p_155017_.items, i)) {
                          p_155017_.setRecipeUsed(recipeholder);
                      }
  
-@@ -209,7 +_,7 @@
+@@ -205,7 +_,7 @@
          }
      }
  
@@ -87,7 +91,7 @@
          RegistryAccess p_266924_,
          @Nullable RecipeHolder<? extends AbstractCookingRecipe> p_299207_,
          SingleRecipeInput p_364069_,
-@@ -227,9 +_,9 @@
+@@ -223,9 +_,9 @@
                  } else if (!ItemStack.isSameItemSameComponents(itemstack1, itemstack)) {
                      return false;
                  } else {
@@ -99,7 +103,7 @@
                  }
              }
          } else {
-@@ -237,7 +_,7 @@
+@@ -233,7 +_,7 @@
          }
      }
  
@@ -108,7 +112,7 @@
          RegistryAccess p_266740_,
          @Nullable RecipeHolder<? extends AbstractCookingRecipe> p_299450_,
          SingleRecipeInput p_364092_,
-@@ -251,7 +_,7 @@
+@@ -247,7 +_,7 @@
              if (itemstack2.isEmpty()) {
                  p_267073_.set(2, itemstack1.copy());
              } else if (ItemStack.isSameItemSameComponents(itemstack2, itemstack1)) {
@@ -117,7 +121,7 @@
              }
  
              if (itemstack.is(Blocks.WET_SPONGE.asItem()) && !p_267073_.get(1).isEmpty() && p_267073_.get(1).is(Items.BUCKET)) {
-@@ -392,5 +_,34 @@
+@@ -388,5 +_,34 @@
          for (ItemStack itemstack : this.items) {
              p_363325_.accountStack(itemstack);
          }

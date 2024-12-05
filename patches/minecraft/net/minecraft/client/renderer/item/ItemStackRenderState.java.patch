@@ -1,0 +1,21 @@
+--- a/net/minecraft/client/renderer/item/ItemStackRenderState.java
++++ b/net/minecraft/client/renderer/item/ItemStackRenderState.java
+@@ -72,7 +_,7 @@
+             return null;
+         } else {
+             BakedModel bakedmodel = this.layers[p_376964_.nextInt(this.activeLayerCount)].model;
+-            return bakedmodel == null ? null : bakedmodel.getParticleIcon();
++            return bakedmodel == null ? null : bakedmodel.getParticleIcon(net.minecraftforge.client.model.data.ModelData.EMPTY);
+         }
+     }
+ 
+@@ -149,6 +_,9 @@
+ 
+         void render(PoseStack p_377989_, MultiBufferSource p_377594_, int p_375616_, int p_376132_) {
+             p_377989_.pushPose();
++            if (this.model != null)
++                this.model.applyTransform(ItemStackRenderState.this.displayContext, p_377989_, ItemStackRenderState.this.isLeftHand);
++            else
+             this.transform().apply(ItemStackRenderState.this.isLeftHand, p_377989_);
+             p_377989_.translate(-0.5F, -0.5F, -0.5F);
+             if (this.specialRenderer != null) {

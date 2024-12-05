@@ -9,7 +9,7 @@
  
      private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Holder<E>> p_206668_, boolean p_206669_) {
          Codec<List<Holder<E>>> codec = p_206668_.listOf().validate(ExtraCodecs.ensureHomogenous(Holder::kind));
-@@ -42,6 +_,10 @@
+@@ -36,6 +_,10 @@
          this.elementCodec = p_206661_;
          this.homogenousListCodec = homogenousList(p_206661_, p_206662_);
          this.registryAwareCodec = Codec.either(TagKey.hashedCodec(p_206660_), this.homogenousListCodec);
@@ -20,7 +20,7 @@
      }
  
      @Override
-@@ -50,14 +_,17 @@
+@@ -44,14 +_,17 @@
              Optional<HolderGetter<E>> optional = registryops.getter(this.registryKey);
              if (optional.isPresent()) {
                  HolderGetter<E> holdergetter = optional.get();
@@ -39,7 +39,7 @@
                                  );
                              return dataresult.map(p_326149_ -> Pair.of((HolderSet<E>)p_326149_, (T)p_326147_.getSecond()));
                          }
-@@ -90,7 +_,7 @@
+@@ -84,7 +_,7 @@
      }
  
      private <T> DataResult<Pair<HolderSet<E>, T>> decodeWithoutRegistry(DynamicOps<T> p_206671_, T p_206672_) {
@@ -48,7 +48,7 @@
              List<Holder.Direct<E>> list = new ArrayList<>();
  
              for (Holder<E> holder : p_206666_.getFirst()) {
-@@ -106,6 +_,9 @@
+@@ -100,6 +_,9 @@
      }
  
      private <T> DataResult<T> encodeWithoutRegistry(HolderSet<E> p_206690_, DynamicOps<T> p_206691_, T p_206692_) {

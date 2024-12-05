@@ -34,7 +34,7 @@
          }
      }
  
-@@ -468,12 +_,12 @@
+@@ -470,12 +_,12 @@
                      (float)((double)window.getHeight() / window.getGuiScale()),
                      0.0F,
                      1000.0F,
@@ -49,7 +49,7 @@
              Lighting.setupFor3DItems();
              GuiGraphics guigraphics = new GuiGraphics(this.minecraft, this.renderBuffers.bufferSource());
              if (flag && p_109096_ && this.minecraft.level != null) {
-@@ -499,7 +_,7 @@
+@@ -501,7 +_,7 @@
                  }
              } else if (flag && this.minecraft.screen != null) {
                  try {
@@ -58,7 +58,7 @@
                  } catch (Throwable throwable1) {
                      CrashReport crashreport1 = CrashReport.forThrowable(throwable1, "Rendering screen");
                      CrashReportCategory crashreportcategory1 = crashreport1.addCategory("Screen render details");
-@@ -655,6 +_,9 @@
+@@ -657,6 +_,9 @@
          if (this.minecraft.options.bobView().get()) {
              this.bobView(posestack, camera.getPartialTickTime());
          }

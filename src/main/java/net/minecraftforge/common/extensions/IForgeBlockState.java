@@ -22,10 +22,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.IPlantable;
@@ -198,17 +196,6 @@ public interface IForgeBlockState {
      */
     default float getExplosionResistance(BlockGetter level, BlockPos pos, Explosion explosion) {
         return self().getBlock().getExplosionResistance(self(), level, pos, explosion);
-    }
-
-    /**
-     *
-     * Called when A user uses the creative pick block button on this block
-     *
-     * @param target The full target the player is looking at
-     * @return A ItemStack to add to the player's inventory, empty itemstack if nothing should be added.
-     */
-    default ItemStack getCloneItemStack(HitResult target, LevelReader level, BlockPos pos, Player player) {
-        return self().getBlock().getCloneItemStack(self(), target, level, pos, player);
     }
 
     /**

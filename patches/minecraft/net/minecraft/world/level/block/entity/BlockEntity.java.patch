@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -27,7 +_,7 @@
+@@ -26,7 +_,7 @@
  import net.minecraft.world.level.block.state.BlockState;
  import org.slf4j.Logger;
  
@@ -9,7 +9,7 @@
      private static final Logger LOGGER = LogUtils.getLogger();
      private final BlockEntityType<?> type;
      @Nullable
-@@ -38,10 +_,12 @@
+@@ -37,10 +_,12 @@
      private DataComponentMap components = DataComponentMap.EMPTY;
  
      public BlockEntity(BlockEntityType<?> p_155228_, BlockPos p_155229_, BlockState p_155230_) {
@@ -22,7 +22,7 @@
      }
  
      private void validateBlockState(BlockState p_345558_) {
-@@ -51,7 +_,7 @@
+@@ -50,7 +_,7 @@
      }
  
      public boolean isValidBlockState(BlockState p_345570_) {
@@ -31,7 +31,7 @@
      }
  
      public static BlockPos getPosFromTag(CompoundTag p_187473_) {
-@@ -72,6 +_,7 @@
+@@ -71,6 +_,7 @@
      }
  
      protected void loadAdditional(CompoundTag p_331149_, HolderLookup.Provider p_333170_) {
@@ -39,7 +39,7 @@
      }
  
      public final void loadWithComponents(CompoundTag p_331756_, HolderLookup.Provider p_335164_) {
-@@ -87,6 +_,7 @@
+@@ -86,6 +_,7 @@
      }
  
      protected void saveAdditional(CompoundTag p_187471_, HolderLookup.Provider p_327783_) {
@@ -47,7 +47,7 @@
      }
  
      public final CompoundTag saveWithFullMetadata(HolderLookup.Provider p_331193_) {
-@@ -217,6 +_,13 @@
+@@ -208,6 +_,13 @@
  
      public void setRemoved() {
          this.remove = true;

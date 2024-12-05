@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/KeyMapping.java
 +++ b/net/minecraft/client/KeyMapping.java
-@@ -14,9 +_,9 @@
+@@ -15,9 +_,9 @@
  import net.minecraftforge.api.distmarker.OnlyIn;
  
  @OnlyIn(Dist.CLIENT)
@@ -12,7 +12,7 @@
      private static final Set<String> CATEGORIES = Sets.newHashSet();
      public static final String CATEGORY_MOVEMENT = "key.categories.movement";
      public static final String CATEGORY_MISC = "key.categories.misc";
-@@ -42,14 +_,14 @@
+@@ -43,14 +_,14 @@
      private int clickCount;
  
      public static void click(InputConstants.Key p_90836_) {
@@ -29,7 +29,7 @@
          if (keymapping != null) {
              keymapping.setDown(p_90839_);
          }
-@@ -100,7 +_,7 @@
+@@ -101,7 +_,7 @@
      }
  
      public boolean isDown() {
@@ -38,7 +38,7 @@
      }
  
      public String getCategory() {
-@@ -136,7 +_,16 @@
+@@ -137,7 +_,16 @@
      public int compareTo(KeyMapping p_90841_) {
          return this.category.equals(p_90841_.category)
              ? I18n.get(this.name).compareTo(I18n.get(p_90841_.name))
@@ -56,7 +56,7 @@
      }
  
      public static Supplier<Component> createNameSupplier(String p_90843_) {
-@@ -145,6 +_,20 @@
+@@ -146,6 +_,20 @@
      }
  
      public boolean same(KeyMapping p_90851_) {
@@ -77,7 +77,7 @@
          return this.key.equals(p_90851_.key);
      }
  
-@@ -163,11 +_,13 @@
+@@ -164,11 +_,13 @@
      }
  
      public Component getTranslatedKeyMessage() {
@@ -92,10 +92,10 @@
      }
  
      public String saveString() {
-@@ -176,5 +_,88 @@
- 
-     public void setDown(boolean p_90846_) {
-         this.isDown = p_90846_;
+@@ -182,5 +_,88 @@
+     @Nullable
+     public static KeyMapping get(String p_378660_) {
+         return ALL.get(p_378660_);
 +    }
 +
 +    private net.minecraftforge.client.settings.KeyModifier keyModifierDefault = net.minecraftforge.client.settings.KeyModifier.NONE;

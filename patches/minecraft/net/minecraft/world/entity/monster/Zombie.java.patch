@@ -8,10 +8,10 @@
          this.convertTo(
              p_34311_,
              ConversionParams.single(this, true, true),
--            p_359259_ -> p_359259_.handleAttributes(p_359259_.level().getCurrentDifficultyAt(p_359259_.blockPosition()).getSpecialMultiplier())
-+            p_359259_ -> {
-+                p_359259_.handleAttributes(p_359259_.level().getCurrentDifficultyAt(p_359259_.blockPosition()).getSpecialMultiplier());
-+                net.minecraftforge.event.ForgeEventFactory.onLivingConvert(this, p_359259_);
+-            p_375145_ -> p_375145_.handleAttributes(p_375145_.level().getCurrentDifficultyAt(p_375145_.blockPosition()).getSpecialMultiplier())
++            p_375145_ -> {
++                p_375145_.handleAttributes(p_375145_.level().getCurrentDifficultyAt(p_375145_.blockPosition()).getSpecialMultiplier());
++                net.minecraftforge.event.ForgeEventFactory.onLivingConvert(this, p_375145_);
 +            }
          );
      }

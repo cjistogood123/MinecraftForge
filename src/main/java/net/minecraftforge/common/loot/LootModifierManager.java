@@ -25,6 +25,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 
 public class LootModifierManager extends SimpleJsonResourceReloadListener<JsonElement> {
@@ -36,7 +37,7 @@ public class LootModifierManager extends SimpleJsonResourceReloadListener<JsonEl
     private Map<ResourceLocation, IGlobalLootModifier> modifiers = ImmutableMap.of();
 
     public LootModifierManager(HolderLookup.Provider registries) {
-        super(registries, ExtraCodecs.JSON, FOLDER);
+        super(registries.createSerializationContext(JsonOps.INSTANCE), ExtraCodecs.JSON, FileToIdConverter.json(FOLDER));
         this.registries = registries;
     }
 

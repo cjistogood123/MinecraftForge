@@ -13,14 +13,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
@@ -49,16 +48,17 @@ public class SeparateTransformsModel implements IUnbakedGeometry<SeparateTransfo
         this.perspectives = perspectives;
     }
 
+
     @Override
-    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
+    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, TextureSlots textures, ModelState modelState) {
         return new Baked(
             context.useAmbientOcclusion(),
             context.isGui3d(),
             context.useBlockLight(),
-            spriteGetter.apply(context.getMaterial("particle")),
-            baseModel.bake(spriteGetter, modelState, context.useBlockLight()),
+            baker.sprites().maybeMissing(textures, "particle"),
+            baseModel.bake(textures, baker, modelState),
             ImmutableMap.copyOf(Maps.transformValues(perspectives, value -> {
-                return value.bake(spriteGetter, modelState, context.useBlockLight());
+                return value.bake(textures, baker, modelState, context.useBlockLight(), value.getGuiLight().lightLikeBlock(), value.getTransforms());
             }))
         );
     }
@@ -105,11 +105,6 @@ public class SeparateTransformsModel implements IUnbakedGeometry<SeparateTransfo
         @Override
         public boolean usesBlockLight() {
             return isSideLit;
-        }
-
-        @Override
-        public boolean isCustomRenderer() {
-            return false;
         }
 
         @Override

@@ -104,11 +104,6 @@ public class LoadingErrorScreen extends ErrorScreen {
         }
 
         @Override
-        protected int getScrollbarPosition() {
-            return this.getRight() - 6;
-        }
-
-        @Override
         public int getRowWidth() {
             return this.width;
         }

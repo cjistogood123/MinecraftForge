@@ -21,7 +21,7 @@ import net.minecraft.server.packs.AbstractPackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.Pack.Metadata;
@@ -58,8 +58,8 @@ public class DelegatingPackResources extends AbstractPackResources {
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public <T> T getMetadataSection(MetadataSectionSerializer<T> deserializer) throws IOException {
-        return deserializer.getMetadataSectionName().equals("pack") ? (T) this.packMeta : null;
+    public <T> T getMetadataSection(MetadataSectionType<T> deserializer) throws IOException {
+        return deserializer.name().equals("pack") ? (T) this.packMeta : null;
     }
 
     @Override

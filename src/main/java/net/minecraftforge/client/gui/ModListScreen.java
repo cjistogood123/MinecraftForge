@@ -22,7 +22,6 @@ import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.gui.widget.ModListWidget;
 import net.minecraftforge.client.gui.widget.ScrollPanel;
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -58,6 +57,7 @@ import net.minecraft.network.chat.Style;
 import org.slf4j.Logger;
 
 public class ModListScreen extends Screen {
+    private static final ResourceLocation LOGO = ResourceLocation.fromNamespaceAndPath("forge", "mod_logo");
     private static String stripControlCodes(String value) { return net.minecraft.util.StringUtil.stripColor(value); }
     private static final Logger LOGGER = LogUtils.getLogger();
     private enum SortType implements Comparator<IModInfo> {
@@ -378,6 +378,9 @@ public class ModListScreen extends Screen {
         updateCache();
     }
 
+    record Logo(ResourceLocation texture, Size2i size) {}
+    private static final Logo NONE = new Logo(null, new Size2i(0, 0));
+
     private void updateCache() {
         if (selected == null) {
             this.configButton.active = false;
@@ -390,8 +393,9 @@ public class ModListScreen extends Screen {
         List<String> lines = new ArrayList<>();
         VersionChecker.CheckResult vercheck = VersionChecker.getResult(selectedMod);
 
-        @SuppressWarnings("resource")
-        Pair<ResourceLocation, Size2i> logoData = selectedMod.getLogoFile().map(logoFile -> {
+        var logoData = NONE;
+        var logoFile = selectedMod.getLogoFile().orElse(null);
+        if (logoFile != null) {
             TextureManager tm = this.minecraft.getTextureManager();
 
             try {
@@ -404,20 +408,26 @@ public class ModListScreen extends Screen {
                 }
 
                 if (logo != null) {
-                    return Pair.of(tm.register("modlogo", new DynamicTexture(logo) {
+
+                    var texture = new DynamicTexture(logo) {
                         @Override
                         public void upload() {
-                            this.bind();
-                            NativeImage td = this.getPixels();
-                            // Use custom "blur" value which controls texture filtering (nearest-neighbor vs linear)
-                            this.getPixels().upload(0, 0, 0, 0, 0, td.getWidth(), td.getHeight(), selectedMod.getLogoBlur(), false, false, false);
+                            var pixels = this.getPixels();
+                            if (pixels != null) {
+                                this.bind();
+                                // Use custom "blur" value which controls texture filtering (nearest-neighbor vs linear)
+                                pixels.upload(0, 0, 0, selectedMod.getLogoBlur());
+                            }
                         }
-                    }), new Size2i(logo.getWidth(), logo.getHeight()));
+                    };
+
+                    tm.register(LOGO, texture);
+                    var size = new Size2i(logo.getWidth(), logo.getHeight());
+
+                    logoData = new Logo(LOGO, size);
                 }
             } catch (IOException e) { }
-
-            return Pair.<ResourceLocation, Size2i>of(null, new Size2i(0, 0));
-        }).orElse(Pair.of(null, new Size2i(0, 0)));
+        }
 
         lines.add(selectedMod.getDisplayName());
         lines.add(ForgeI18n.parseMessage("fml.menu.mods.info.version", MavenVersionStringHelper.artifactVersionToString(selectedMod.getVersion())));
@@ -461,7 +471,7 @@ public class ModListScreen extends Screen {
             }
         }
 
-        modInfo.setInfo(lines, logoData.getLeft(), logoData.getRight());
+        modInfo.setInfo(lines, logoData.texture(), logoData.size());
     }
 
     @Override

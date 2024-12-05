@@ -1,0 +1,12 @@
+--- a/net/minecraft/client/resources/model/SpriteGetter.java
++++ b/net/minecraft/client/resources/model/SpriteGetter.java
+@@ -9,4 +_,9 @@
+     TextureAtlasSprite get(Material p_376066_);
+ 
+     TextureAtlasSprite reportMissingReference(String p_377389_);
++
++    default TextureAtlasSprite maybeMissing(net.minecraft.client.renderer.block.model.TextureSlots textures, String name) {
++        var material = textures.getMaterial(name);
++        return material != null ? get(material) : reportMissingReference(name);
++    }
+ }

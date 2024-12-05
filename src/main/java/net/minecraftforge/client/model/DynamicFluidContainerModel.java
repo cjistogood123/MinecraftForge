@@ -5,27 +5,21 @@
 
 package net.minecraftforge.client.model;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.math.Transformation;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedOverrides;
+import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.ForgeRenderTypes;
 import net.minecraftforge.client.RenderTypeGroup;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -34,17 +28,9 @@ import net.minecraftforge.client.model.geometry.IGeometryLoader;
 import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.client.model.geometry.StandaloneGeometryBakingContext;
 import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
-import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-
-import java.util.Map;
-import java.util.function.Function;
-
-import static net.minecraftforge.client.model.geometry.StandaloneGeometryBakingContext.LOCATION;
 
 /**
  * A dynamic fluid container model, capable of re-texturing itself at runtime to match the contained fluid.
@@ -85,18 +71,21 @@ public class DynamicFluidContainerModel implements IUnbakedGeometry<DynamicFluid
         return new DynamicFluidContainerModel(newFluid, flipGas, coverIsMask, applyFluidLuminosity);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
-        Material particleLocation = context.hasMaterial("particle") ? context.getMaterial("particle") : null;
-        Material baseLocation = context.hasMaterial("base") ? context.getMaterial("base") : null;
-        Material fluidMaskLocation = context.hasMaterial("fluid") ? context.getMaterial("fluid") : null;
-        Material coverLocation = context.hasMaterial("cover") ? context.getMaterial("cover") : null;
+    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, TextureSlots textures, ModelState modelState) {
+        Material fluidMaskLocation = textures.getMaterial("fluid");
+        Material stillMaterial = null;
+        if (fluid != Fluids.EMPTY) {
+            var stillTexture = IClientFluidTypeExtensions.of(fluid).getStillTexture();
+            stillMaterial = new Material(TextureAtlas.LOCATION_BLOCKS, stillTexture);
+        }
 
-        TextureAtlasSprite baseSprite = baseLocation != null ? spriteGetter.apply(baseLocation) : null;
-        TextureAtlasSprite fluidSprite = fluid != Fluids.EMPTY ? spriteGetter.apply(ForgeHooksClient.getBlockMaterial(IClientFluidTypeExtensions.of(fluid).getStillTexture())) : null;
-        TextureAtlasSprite coverSprite = (coverLocation != null && (!coverIsMask || baseLocation != null)) ? spriteGetter.apply(coverLocation) : null;
-
-        TextureAtlasSprite particleSprite = particleLocation != null ? spriteGetter.apply(particleLocation) : null;
+        var sprites = baker.sprites();
+        var baseSprite = sprites.maybeMissing(textures, "base");
+        var fluidSprite = stillMaterial == null ? null : sprites.get(stillMaterial);
+        var coverSprite = sprites.maybeMissing(textures, "cover"); // (coverLocation != null && (!coverIsMask || baseLocation != null)) ? textures.apply(coverLocation) : null;
+        var particleSprite = sprites.maybeMissing(textures, "particle");
 
         if (particleSprite == null) particleSprite = fluidSprite;
         if (particleSprite == null) particleSprite = baseSprite;
@@ -110,12 +99,12 @@ public class DynamicFluidContainerModel implements IUnbakedGeometry<DynamicFluid
         }
 
         // We need to disable GUI 3D and block lighting for this to render properly
-        var itemContext = StandaloneGeometryBakingContext.builder(context).withGui3d(false).withUseBlockLight(false).build(LOCATION);
+        var itemContext = StandaloneGeometryBakingContext.builder(context).withGui3d(false).withUseBlockLight(false).build();
         var modelBuilder = CompositeModel.Baked.builder(itemContext, particleSprite, /*new ContainedFluidOverrideHandler(baker, itemContext, this),*/ context.getTransforms());
 
         var normalRenderTypes = getLayerRenderTypes(false);
 
-        if (baseLocation != null && baseSprite != null) {
+        if (baseSprite != null) {
             // Base texture
             var unbaked = UnbakedGeometryHelper.createUnbakedItemElements(0, baseSprite.contents());
             var quads = UnbakedGeometryHelper.bakeElements(unbaked, $ -> baseSprite, modelState);
@@ -123,7 +112,7 @@ public class DynamicFluidContainerModel implements IUnbakedGeometry<DynamicFluid
         }
 
         if (fluidMaskLocation != null && fluidSprite != null) {
-            TextureAtlasSprite templateSprite = spriteGetter.apply(fluidMaskLocation);
+            TextureAtlasSprite templateSprite = sprites.get(fluidMaskLocation);
             if (templateSprite != null) {
                 // Fluid layer
                 var transformedState = new SimpleModelState(modelState.getRotation().compose(FLUID_TRANSFORM), modelState.isUvLocked());
@@ -154,17 +143,13 @@ public class DynamicFluidContainerModel implements IUnbakedGeometry<DynamicFluid
         return modelBuilder.build();
     }
 
-    public static final class Loader implements IGeometryLoader<DynamicFluidContainerModel>
-    {
+    public static final class Loader implements IGeometryLoader<DynamicFluidContainerModel> {
         public static final Loader INSTANCE = new Loader();
 
-        private Loader()
-        {
-        }
+        private Loader() { }
 
         @Override
-        public DynamicFluidContainerModel read(JsonObject jsonObject, JsonDeserializationContext deserializationContext)
-        {
+        public DynamicFluidContainerModel read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) {
             if (!jsonObject.has("fluid"))
                 throw new RuntimeException("Bucket model requires 'fluid' value.");
 
@@ -178,54 +163,6 @@ public class DynamicFluidContainerModel implements IUnbakedGeometry<DynamicFluid
 
             // create new model with correct liquid
             return new DynamicFluidContainerModel(fluid, flip, coverIsMask, applyFluidLuminosity);
-        }
-    }
-
-    private static final class ContainedFluidOverrideHandler extends BakedOverrides {
-        private final Map<String, BakedModel> cache = Maps.newHashMap(); // contains all the baked models since they'll never change
-        private final BakedOverrides nested;
-        private final ModelBaker baker;
-        private final IGeometryBakingContext owner;
-        private final DynamicFluidContainerModel parent;
-
-        private ContainedFluidOverrideHandler(BakedOverrides nested, ModelBaker baker, IGeometryBakingContext owner, DynamicFluidContainerModel parent) {
-            this.nested = nested;
-            this.baker = baker;
-            this.owner = owner;
-            this.parent = parent;
-        }
-
-        @Override
-        public BakedModel findOverride(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-            BakedModel overridden = nested.findOverride(stack, level, entity, seed);
-            if (overridden != null)
-                return overridden;
-
-            var fluidStack = FluidUtil.getFluidContained(stack).orElse(null);
-            if (fluidStack == null)
-                return null;
-
-            Fluid fluid = fluidStack.getFluid();
-            String name = ForgeRegistries.FLUIDS.getKey(fluid).toString();
-
-            if (!cache.containsKey(name)) {
-                DynamicFluidContainerModel unbaked = this.parent.withFluid(fluid);
-                BakedModel bakedModel = unbaked.bake(owner, baker, Material::sprite, BlockModelRotation.X0_Y0);//, nested);
-                cache.put(name, bakedModel);
-                return bakedModel;
-            }
-
-            return cache.get(name);
-        }
-    }
-
-    public static class Colors implements ItemColor {
-        @Override
-        public int getColor(@NotNull ItemStack stack, int tintIndex) {
-            if (tintIndex != 1) return 0xFFFFFFFF;
-            return FluidUtil.getFluidContained(stack)
-                            .map(fluidStack -> IClientFluidTypeExtensions.of(fluidStack.getFluid()).getTintColor(fluidStack))
-                            .orElse(0xFFFFFFFF);
         }
     }
 }

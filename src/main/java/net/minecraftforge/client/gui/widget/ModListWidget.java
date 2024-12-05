@@ -36,11 +36,6 @@ public class ModListWidget extends ObjectSelectionList<ModListWidget.ModEntry> {
     }
 
     @Override
-    protected int getScrollbarPosition() {
-        return this.listWidth;
-    }
-
-    @Override
     public int getRowWidth() {
         return this.listWidth;
     }

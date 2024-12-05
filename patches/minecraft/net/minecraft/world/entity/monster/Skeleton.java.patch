@@ -5,6 +5,6 @@
  
      protected void doFreezeConversion() {
 +        if (!net.minecraftforge.event.ForgeEventFactory.canLivingConvert(this, EntityType.STRAY, (timer) -> this.conversionTime = timer)) return;
-         this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), p_361572_ -> {
+         this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), p_375136_ -> {
              if (!this.isSilent()) {
                  this.level().levelEvent(null, 1048, this.blockPosition(), 0);

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/monster/EnderMan.java
 +++ b/net/minecraft/world/entity/monster/EnderMan.java
-@@ -114,7 +_,6 @@
+@@ -113,7 +_,6 @@
  
      @Override
      public void setTarget(@Nullable LivingEntity p_32537_) {
@@ -8,7 +8,7 @@
          AttributeInstance attributeinstance = this.getAttribute(Attributes.MOVEMENT_SPEED);
          if (p_32537_ == null) {
              this.targetChangeTime = 0;
-@@ -128,6 +_,7 @@
+@@ -127,6 +_,7 @@
                  attributeinstance.addTransientModifier(SPEED_MODIFIER_ATTACKING);
              }
          }
@@ -16,16 +16,16 @@
      }
  
      @Override
-@@ -209,7 +_,7 @@
+@@ -208,7 +_,7 @@
      }
  
      boolean isBeingStaredBy(Player p_368759_) {
--        return this.isLookingAtMe(p_368759_, 0.025, true, false, LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM, new DoubleSupplier[]{this::getEyeY});
-+        return this.isLookingAtMe(p_368759_, 0.025, true, false, net.minecraftforge.common.ForgeHooks.isNotDisguised(this), new DoubleSupplier[]{this::getEyeY});
+-        return !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(p_368759_) ? false : this.isLookingAtMe(p_368759_, 0.025, true, false, new double[]{this.getEyeY()});
++        return !net.minecraftforge.common.ForgeHooks.isNotDisguised(this).test(p_368759_) ? false : this.isLookingAtMe(p_368759_, 0.025, true, false, new double[]{this.getEyeY()});
      }
  
      @Override
-@@ -287,8 +_,10 @@
+@@ -286,8 +_,10 @@
          boolean flag = blockstate.blocksMotion();
          boolean flag1 = blockstate.getFluidState().is(FluidTags.WATER);
          if (flag && !flag1) {
@@ -37,7 +37,7 @@
              if (flag2) {
                  this.level().gameEvent(GameEvent.TELEPORT, vec3, GameEvent.Context.of(this));
                  if (!this.isSilent()) {
-@@ -441,7 +_,7 @@
+@@ -440,7 +_,7 @@
              if (this.enderman.getCarriedBlock() == null) {
                  return false;
              } else {
@@ -46,7 +46,7 @@
              }
          }
  
-@@ -459,7 +_,7 @@
+@@ -458,7 +_,7 @@
              BlockState blockstate2 = this.enderman.getCarriedBlock();
              if (blockstate2 != null) {
                  blockstate2 = Block.updateFromNeighbourShapes(blockstate2, this.enderman.level(), blockpos);
@@ -55,7 +55,7 @@
                      level.setBlock(blockpos, blockstate2, 3);
                      level.gameEvent(GameEvent.BLOCK_PLACE, blockpos, GameEvent.Context.of(this.enderman, blockstate2));
                      this.enderman.setCarriedBlock(null);
-@@ -471,6 +_,7 @@
+@@ -470,6 +_,7 @@
              return p_32562_.isAir()
                  && !p_32563_.isAir()
                  && !p_32563_.is(Blocks.BEDROCK)
@@ -63,7 +63,7 @@
                  && p_32563_.isCollisionShapeFullBlock(p_32559_, p_32564_)
                  && p_32561_.canSurvive(p_32559_, p_32560_)
                  && p_32559_.getEntities(this.enderman, AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(p_32560_))).isEmpty();
-@@ -580,7 +_,7 @@
+@@ -579,7 +_,7 @@
              if (this.enderman.getCarriedBlock() != null) {
                  return false;
              } else {

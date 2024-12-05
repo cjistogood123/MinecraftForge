@@ -39,6 +39,12 @@ sealed abstract class ForgeDevLaunchHandler extends CommonDevLaunchHandler {
         }
     }
 
+    public static final class ClientData extends ForgeDevLaunchHandler {
+        public ClientData() {
+            super(CLIENT_DATA);
+        }
+    }
+
     public static final class Data extends ForgeDevLaunchHandler {
         public Data() {
             super(DATA);

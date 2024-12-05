@@ -9,9 +9,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
@@ -19,17 +18,17 @@ import net.minecraft.client.resources.model.UnbakedModel;
 /**
  * General interface for any model that can be baked, superset of vanilla {@link UnbakedModel}.
  * <p>
- * Instances of this class ar usually created via {@link IGeometryLoader}.
+ * Instances of this class are usually created via {@link IGeometryLoader}.
  *
  * @see IGeometryLoader
  * @see IGeometryBakingContext
  */
 public interface IUnbakedGeometry<T extends IUnbakedGeometry<T>> {
-    BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState);
+    BakedModel bake(IGeometryBakingContext context, ModelBaker baker, TextureSlots spriteGetter, ModelState modelState);
 
     /**
      * Resolve parents of nested {@link BlockModel}s which are later used in
-     * {@link IUnbakedGeometry#bake(IGeometryBakingContext, ModelBaker, Function, ModelState)}
+     * {@link IUnbakedGeometry#bake(IGeometryBakingContext, ModelBaker, TextureSlots, ModelState)}
      * via {@link BlockModel#resolveParents(Function)}
      */
     default void resolveDependencies(UnbakedModel.Resolver resolver, IGeometryBakingContext context) { }

@@ -6,15 +6,12 @@
 package net.minecraftforge.client.extensions.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -22,7 +19,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IArmPoseTransformer;
 import net.minecraftforge.fml.LogicalSide;
@@ -141,18 +137,6 @@ public interface IClientItemExtensions {
      * @param partialTick Partial tick time, useful for interpolation
      */
     default void renderHelmetOverlay(ItemStack stack, Player player, int width, int height, float partialTick) { }
-
-    /**
-     * Queries this item's renderer.
-     * <p>
-     * Only used if {@link BakedModel#isCustomRenderer()} returns {@code true} or {@link BlockState#getRenderShape()}
-     * returns {@link net.minecraft.world.level.block.RenderShape#ENTITYBLOCK_ANIMATED}.
-     * <p>
-     * By default, returns vanilla's block entity renderer.
-     */
-    default BlockEntityWithoutLevelRenderer getCustomRenderer() {
-        return Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer();
-    }
 
     enum FontContext {
         /**

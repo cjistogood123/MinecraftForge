@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
+
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -44,14 +46,14 @@ public class CompoundIngredient extends AbstractIngredient {
 
     @Override
     @NotNull
-    public List<Holder<Item>> items() {
+    public Stream<Holder<Item>> items() {
         if (this.items == null) {
             var tmp = new ArrayList<Holder<Item>>();
             for (var child : children)
-                tmp.addAll(child.items());
+                child.items().forEach(tmp::add);
             this.items = Collections.unmodifiableList(tmp);
         }
-        return this.items;
+        return this.items.stream();
     }
 
     @Override

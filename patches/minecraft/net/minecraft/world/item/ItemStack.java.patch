@@ -6,10 +6,10 @@
  
 -public final class ItemStack implements DataComponentHolder {
 +public final class ItemStack implements DataComponentHolder, net.minecraftforge.common.extensions.IForgeItemStack {
-     public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(
-         () -> RecordCodecBuilder.create(
-                 p_359412_ -> p_359412_.group(
-@@ -348,13 +_,22 @@
+     private static final List<Component> OP_NBT_WARNING = List.of(
+         Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD),
+         Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED),
+@@ -357,13 +_,22 @@
      }
  
      public InteractionResult useOn(UseOnContext p_41662_) {
@@ -33,7 +33,7 @@
              if (player != null && interactionresult instanceof InteractionResult.Success interactionresult$success && interactionresult$success.wasItemInteraction()) {
                  player.awardStat(Stats.ITEM_USED.get(item));
              }
-@@ -507,7 +_,13 @@
+@@ -516,7 +_,13 @@
                  p_41623_,
                  serverlevel,
                  p_41624_ instanceof ServerPlayer serverplayer ? serverplayer : null,
@@ -48,8 +48,8 @@
              );
          }
      }
-@@ -856,6 +_,8 @@
-                 list.add(DISABLED_ITEM_TOOLTIP);
+@@ -876,6 +_,8 @@
+                 list.addAll(OP_NBT_WARNING);
              }
  
 +            net.minecraftforge.event.ForgeEventFactory.onItemTooltip(this, p_41652_, list, p_41653_);
@@ -57,7 +57,7 @@
              return list;
          }
      }
-@@ -1082,6 +_,7 @@
+@@ -1102,6 +_,7 @@
          this.getItem().onUseTick(p_41732_, p_41733_, this, p_41734_);
      }
  

@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
-@@ -83,6 +_,17 @@
+@@ -87,6 +_,17 @@
          OptionSpec<Void> optionspec13 = optionparser.accepts("jfrProfile");
          OptionSpec<Path> optionspec14 = optionparser.accepts("pidFile").withRequiredArg().withValuesConvertedBy(new PathConverter());
          OptionSpec<String> optionspec15 = optionparser.nonOptions();
@@ -18,7 +18,7 @@
  
          try {
              OptionSet optionset = optionparser.parse(p_129699_);
-@@ -91,6 +_,14 @@
+@@ -95,6 +_,14 @@
                  return;
              }
  
@@ -33,7 +33,7 @@
              Path path = optionset.valueOf(optionspec14);
              if (path != null) {
                  writePidFile(path);
-@@ -105,24 +_,29 @@
+@@ -109,24 +_,29 @@
              Bootstrap.validate();
              Util.startTimerHackThread();
              Path path1 = Paths.get("server.properties");
@@ -70,7 +70,7 @@
              LevelStorageSource levelstoragesource = LevelStorageSource.createDefault(file1.toPath());
              LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = levelstoragesource.validateAndCreateAccess(s);
              Dynamic<?> dynamic;
-@@ -173,6 +_,10 @@
+@@ -177,6 +_,10 @@
  
              PackRepository packrepository = ServerPacksSource.createPackRepository(levelstoragesource$levelstorageaccess);
  
@@ -81,7 +81,7 @@
              WorldStem worldstem;
              try {
                  WorldLoader.InitConfig worldloader$initconfig = loadOrCreateConfig(dedicatedserversettings.getProperties(), dynamic1, flag, packrepository);
-@@ -214,6 +_,16 @@
+@@ -218,6 +_,16 @@
                                              worlddimensions = dedicatedserverproperties.createDimensions(p_358511_.datapackWorldgen());
                                          }
  
@@ -98,7 +98,7 @@
                                          WorldDimensions.Complete worlddimensions$complete = worlddimensions.bake(registry);
                                          Lifecycle lifecycle = worlddimensions$complete.lifecycle().add(p_358511_.datapackWorldgen().allRegistriesLifecycle());
                                          return new WorldLoader.DataLoadOutput<>(
-@@ -244,9 +_,16 @@
+@@ -248,9 +_,16 @@
  
              WorldData worlddata = worldstem.worldData();
              levelstoragesource$levelstorageaccess.saveDataTag(registryaccess$frozen, worlddata);
@@ -117,7 +117,7 @@
                          p_296433_,
                          levelstoragesource$levelstorageaccess,
                          packrepository,
-@@ -256,12 +_,13 @@
+@@ -260,12 +_,13 @@
                          services,
                          LoggerChunkProgressListener::createFromGameruleRadius
                      );
@@ -133,7 +133,7 @@
                      }
  
                      return dedicatedserver1;
-@@ -270,7 +_,10 @@
+@@ -274,7 +_,10 @@
              Thread thread = new Thread("Server Shutdown Thread") {
                  @Override
                  public void run() {

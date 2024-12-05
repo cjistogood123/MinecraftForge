@@ -13,7 +13,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
@@ -26,8 +26,6 @@ import net.minecraftforge.client.model.geometry.IGeometryLoader;
 import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Function;
 
 /**
  * Forge reimplementation of vanilla's {@link ItemModelGenerator}, i.e. builtin/generated models with some tweaks:
@@ -46,17 +44,19 @@ public class ItemLayerModel implements IUnbakedGeometry<ItemLayerModel> {
     }
 
     @Override
-    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
+    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, TextureSlots spriteGetter, ModelState modelState) {
         if (textures == null) {
             ImmutableList.Builder<Material> builder = ImmutableList.builder();
-            for (int i = 0; context.hasMaterial("layer" + i); i++)
-                builder.add(context.getMaterial("layer" + i));
+            int i = 0;
+            Material material;
+            while ((material = spriteGetter.getMaterial("layer" + i++)) != null) {
+                builder.add(material);
+            }
             textures = builder.build();
         }
 
-        TextureAtlasSprite particle = spriteGetter.apply(
-            context.hasMaterial("particle") ? context.getMaterial("particle") : textures.get(0)
-        );
+        Material particleMaterial = spriteGetter.getMaterial("particle");
+        var particle = baker.sprites().get(particleMaterial  == null ? textures.get(0) : particleMaterial);
         var rootTransform = context.getRootTransform();
         if (!rootTransform.isIdentity())
             modelState = UnbakedGeometryHelper.composeRootTransformIntoModelState(modelState, rootTransform);
@@ -64,7 +64,7 @@ public class ItemLayerModel implements IUnbakedGeometry<ItemLayerModel> {
         var normalRenderTypes = new RenderTypeGroup(RenderType.translucent(), ForgeRenderTypes.ITEM_UNSORTED_TRANSLUCENT.get());
         var builder = CompositeModel.Baked.builder(context, particle, context.getTransforms());
         for (int i = 0; i < textures.size(); i++) {
-            var sprite = spriteGetter.apply(textures.get(i));
+            var sprite = baker.sprites().get(textures.get(i));
             var unbaked = UnbakedGeometryHelper.createUnbakedItemElements(i, sprite.contents());
             var quads = UnbakedGeometryHelper.bakeElements(unbaked, $ -> sprite, modelState);
             var renderTypeName = renderTypeNames.get(i);

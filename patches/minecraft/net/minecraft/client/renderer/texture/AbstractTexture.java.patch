@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/renderer/texture/AbstractTexture.java
 +++ b/net/minecraft/client/renderer/texture/AbstractTexture.java
-@@ -20,6 +_,8 @@
+@@ -53,6 +_,8 @@
          RenderSystem.assertOnRenderThreadOrInit();
          int i;
          int j;
@@ -9,7 +9,7 @@
          if (p_117961_) {
              i = p_117962_ ? 9987 : 9729;
              j = 9729;
-@@ -76,5 +_,18 @@
+@@ -110,5 +_,18 @@
  
      @Override
      public void close() {

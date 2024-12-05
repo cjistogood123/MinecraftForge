@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
@@ -64,9 +65,8 @@ public class CompositeModel implements IUnbakedGeometry<CompositeModel> {
     }
 
     @Override
-    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
-        Material particleLocation = context.getMaterial("particle");
-        TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
+    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, TextureSlots textures, ModelState modelState) {
+        var particle = baker.sprites().maybeMissing(textures, "particle");
 
         var rootTransform = context.getRootTransform();
         if (!rootTransform.isIdentity())
@@ -78,7 +78,7 @@ public class CompositeModel implements IUnbakedGeometry<CompositeModel> {
             if (!context.isComponentVisible(name, true))
                 continue;
             var model = entry.getValue();
-            bakedPartsBuilder.put(name, model.bake(baker, spriteGetter, modelState));
+            bakedPartsBuilder.put(name, model.bake(textures, baker, modelState, model.getAmbientOcclusion(), model.getGuiLight().lightLikeBlock(), model.getTransforms()));
         }
         var bakedParts = bakedPartsBuilder.build();
 
@@ -159,11 +159,6 @@ public class CompositeModel implements IUnbakedGeometry<CompositeModel> {
         }
 
         @Override
-        public boolean isCustomRenderer() {
-            return false;
-        }
-
-        @Override
         public TextureAtlasSprite getParticleIcon() {
             return particle;
         }
@@ -179,11 +174,6 @@ public class CompositeModel implements IUnbakedGeometry<CompositeModel> {
             for (Map.Entry<String, BakedModel> entry : children.entrySet())
                 sets.add(entry.getValue().getRenderTypes(state, rand, CompositeModel.Data.resolve(data, entry.getKey())));
             return ChunkRenderTypeSet.union(sets);
-        }
-
-        @Override
-        public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
-            return itemPasses;
         }
 
         @Nullable
@@ -223,7 +213,7 @@ public class CompositeModel implements IUnbakedGeometry<CompositeModel> {
             }
 
             private void addLayer(RenderTypeGroup renderTypes, List<BakedQuad> quads) {
-                var modelBuilder = IModelBuilder.of(isAmbientOcclusion, isSideLit, isGui3d, transforms, particle, renderTypes);
+                var modelBuilder = IModelBuilder.of(isAmbientOcclusion, isSideLit, isGui3d, transforms, particle/*, renderTypes*/);
                 quads.forEach(modelBuilder::addUnculledFace);
                 children.add(modelBuilder.build());
             }

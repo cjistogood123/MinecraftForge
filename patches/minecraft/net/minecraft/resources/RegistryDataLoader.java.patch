@@ -63,15 +63,15 @@
              E e = dataresult.getOrThrow();
              p_330991_.register(p_332850_, e, p_332222_);
          }
-@@ -267,6 +_,7 @@
-         String s = Registries.elementsDirPath(p_331358_.key());
-         FileToIdConverter filetoidconverter = FileToIdConverter.json(s);
+@@ -266,6 +_,7 @@
+     ) {
+         FileToIdConverter filetoidconverter = FileToIdConverter.registry(p_331358_.key());
          RegistryOps<JsonElement> registryops = RegistryOps.create(JsonOps.INSTANCE, p_333035_);
 +        Decoder<Optional<E>> conditional = net.minecraftforge.common.crafting.conditions.ConditionCodec.wrap(p_329404_);
  
          for (Entry<ResourceLocation, Resource> entry : filetoidconverter.listMatchingResources(p_335634_).entrySet()) {
              ResourceLocation resourcelocation = entry.getKey();
-@@ -275,7 +_,7 @@
+@@ -274,7 +_,7 @@
              RegistrationInfo registrationinfo = REGISTRATION_INFO_CACHE.apply(resource.knownPackInfo());
  
              try {
@@ -80,18 +80,17 @@
              } catch (Exception exception) {
                  p_335074_.put(
                      resourcekey,
-@@ -298,7 +_,9 @@
+@@ -297,7 +_,8 @@
          RegistryDataLoader.NetworkedRegistryData registrydataloader$networkedregistrydata = p_331925_.get(p_332518_.key());
          if (registrydataloader$networkedregistrydata != null) {
              RegistryOps<Tag> registryops = RegistryOps.create(NbtOps.INSTANCE, p_329253_);
 -            RegistryOps<JsonElement> registryops1 = RegistryOps.create(JsonOps.INSTANCE, p_329253_);
-+            RegistryOps<JsonElement> registryops1 = RegistryOps.create(JsonOps.INSTANCE, p_329253_)
-+                .withContext(net.minecraftforge.common.crafting.conditions.ICondition.IContext.KEY, net.minecraftforge.common.crafting.conditions.ICondition.IContext.TAGS_INVALID);
++            RegistryOps<JsonElement> registryops1 = net.minecraftforge.common.crafting.conditions.ICondition.IContext.TAGS_INVALID.wrap(RegistryOps.create(JsonOps.INSTANCE, p_329253_));
 +            Decoder<Optional<E>> conditional = net.minecraftforge.common.crafting.conditions.ConditionCodec.wrap(p_328898_);
-             String s = Registries.elementsDirPath(p_332518_.key());
-             FileToIdConverter filetoidconverter = FileToIdConverter.json(s);
+             FileToIdConverter filetoidconverter = FileToIdConverter.registry(p_332518_.key());
  
-@@ -321,7 +_,7 @@
+             for (RegistrySynchronization.PackedRegistryEntry registrysynchronization$packedregistryentry : registrydataloader$networkedregistrydata.elements) {
+@@ -319,7 +_,7 @@
  
                      try {
                          Resource resource = p_332010_.getResourceOrThrow(resourcelocation);

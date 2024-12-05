@@ -71,6 +71,7 @@ public abstract class CommonLaunchHandler implements ILaunchHandlerService {
 
     protected record LaunchType(String name, String module, String main, Dist dist, boolean data) {};
     protected static final LaunchType CLIENT          = new LaunchType("client", "minecraft", "net.minecraft.client.main.Main", Dist.CLIENT, false);
+    protected static final LaunchType CLIENT_DATA     = new LaunchType("client_data", "minecraft", "net.minecraft.client.data.Main", Dist.CLIENT, true);
     protected static final LaunchType DATA            = new LaunchType("data",   "minecraft", "net.minecraft.data.Main", Dist.CLIENT, true);
     protected static final LaunchType SERVER          = new LaunchType("server", "minecraft", "net.minecraft.server.Main", Dist.DEDICATED_SERVER, false);
     protected static final LaunchType SERVER_GAMETEST = new LaunchType("server_gametest", "net.minecraftforge.forge", "net.minecraftforge.gametest.GameTestMain", Dist.DEDICATED_SERVER, false);

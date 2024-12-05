@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 /** Ingredient that matches everything from the first ingredient that is not included in the second ingredient */
 public class DifferenceIngredient extends AbstractIngredient {
@@ -49,24 +50,18 @@ public class DifferenceIngredient extends AbstractIngredient {
 
     @SuppressWarnings("deprecation")
     @Override
-    public List<Holder<Item>> items() {
+    public Stream<Holder<Item>> items() {
         if (this.items == null) {
             var tmp = new ArrayList<Holder<Item>>();
 
-            for (var base : this.base.items()) {
-                boolean match = false;
-                for (var item : this.subtracted.items()) {
-                    if (base.is(item)) {
-                        match = true;
-                        break;
-                    }
-                }
+            this.base.items().forEach(base -> {
+                boolean match = this.subtracted.items().anyMatch(base::is);
                 if (!match)
                     tmp.add(base);
-            }
+            });
             this.items = Collections.unmodifiableList(tmp);
         }
-        return items;
+        return items.stream();
     }
 
     @Override

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
@@ -41,18 +42,20 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext {
         this.owner = owner;
     }
 
-    @Override
-    public String getModelName() {
-        return owner.name;
-    }
-
     public boolean hasCustomGeometry() {
         return getCustomGeometry() != null;
     }
 
+    private BlockGeometryBakingContext parentContext() {
+        return owner.parent instanceof BlockModel block ? block.customData : null;
+    }
+
     @Nullable
     public IUnbakedGeometry<?> getCustomGeometry() {
-        return owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() : customGeometry;
+        if (customGeometry != null)
+            return customGeometry;
+        var pctx = parentContext();
+        return pctx == null ? null : pctx.getCustomGeometry();
     }
 
     public void setCustomGeometry(IUnbakedGeometry<?> geometry) {
@@ -61,19 +64,10 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext {
 
     @Override
     public boolean isComponentVisible(String part, boolean fallback) {
-        return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
-                owner.parent.customData.isComponentVisible(part, fallback) :
-                visibilityData.isVisible(part, fallback);
-    }
-
-    @Override
-    public boolean hasMaterial(String name) {
-        return owner.hasTexture(name);
-    }
-
-    @Override
-    public Material getMaterial(String name) {
-        return owner.getMaterial(name);
+        var pctx = parentContext();
+        if (pctx == null || visibilityData.hasCustomVisibility(part))
+            return visibilityData.isVisible(part, fallback);
+        return pctx.isComponentVisible(part, fallback);
     }
 
     @Override
@@ -88,7 +82,7 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext {
 
     @Override
     public boolean useAmbientOcclusion() {
-        return owner.hasAmbientOcclusion();
+        return owner.getAmbientOcclusion();
     }
 
     @Override
@@ -100,7 +94,8 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext {
     public Transformation getRootTransform() {
         if (rootTransform != null)
             return rootTransform;
-        return owner.parent != null ? owner.parent.customData.getRootTransform() : Transformation.identity();
+        var pctx = parentContext();
+        return pctx == null ? Transformation.identity() : pctx.getRootTransform();
     }
 
     public void setRootTransform(Transformation rootTransform) {
@@ -112,7 +107,8 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext {
     public ResourceLocation getRenderTypeHint() {
         if (renderTypeHint != null)
             return renderTypeHint;
-        return owner.parent != null ? owner.parent.customData.getRenderTypeHint() : null;
+        var pctx = parentContext();
+        return pctx == null ? null: pctx.getRenderTypeHint();
     }
 
     public void setRenderTypeHint(ResourceLocation renderTypeHint) {
@@ -131,11 +127,11 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext {
         this.gui3d = other.gui3d;
     }
 
-    public BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> bakedTextureGetter, ModelState modelTransform) {
+    public BakedModel bake(ModelBaker baker, TextureSlots textures, ModelState modelTransform) {
         IUnbakedGeometry<?> geometry = getCustomGeometry();
         if (geometry == null)
             throw new IllegalStateException("Can not use custom baking without custom geometry");
-        return geometry.bake(this, baker, bakedTextureGetter, modelTransform);
+        return geometry.bake(this, baker, textures, modelTransform);
     }
 
     public static class VisibilityData {

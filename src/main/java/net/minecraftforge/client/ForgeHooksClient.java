@@ -8,6 +8,10 @@ package net.minecraftforge.client;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.FogShape;
@@ -17,6 +21,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.datafixers.util.Either;
 import com.mojang.math.Constants;
+import com.mojang.math.Transformation;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
@@ -26,7 +31,6 @@ import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -57,6 +61,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.client.renderer.ShaderProgram;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockElement;
+import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -85,6 +91,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceMetadata;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -139,6 +146,8 @@ import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 import net.minecraftforge.client.gui.ClientTooltipComponentManager;
 import net.minecraftforge.client.gui.ModMismatchDisconnectedScreen;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.client.model.geometry.GeometryLoaderManager;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.client.textures.ForgeTextureMetadata;
 import net.minecraftforge.client.textures.TextureAtlasSpriteLoaderManager;
 import net.minecraftforge.common.ForgeConfig;
@@ -175,6 +184,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -279,10 +289,6 @@ public class ForgeHooksClient {
 
     public static void onBlockColorsInit(BlockColors blockColors) {
         ModLoader.get().postEvent(new RegisterColorHandlersEvent.Block(blockColors));
-    }
-
-    public static void onItemColorsInit(ItemColors itemColors, BlockColors blockColors) {
-        ModLoader.get().postEvent(new RegisterColorHandlersEvent.Item(itemColors, blockColors));
     }
 
     public static Model getArmorModel(HumanoidRenderState state, ItemStack itemStack, EquipmentSlot slot, HumanoidModel<?> _default) {
@@ -414,69 +420,25 @@ public class ForgeHooksClient {
         return ret;
     }
 
-    public static void onModifyBakingResult(Map<ModelResourceLocation, BakedModel> models, ModelBakery modelBakery) {
-        ModLoader.get().postEvent(new ModelEvent.ModifyBakingResult(models, modelBakery));
+    public static void onModifyBakingResult(ModelBakery modelBakery, ModelBakery.BakingResult results) {
+        ModLoader.get().postEvent(new ModelEvent.ModifyBakingResult(modelBakery, results));
     }
 
-    public static void onModelBake(ModelManager modelManager, Map<ModelResourceLocation, BakedModel> models, ModelBakery modelBakery) {
-        ModLoader.get().postEvent(new ModelEvent.BakingCompleted(modelManager, Collections.unmodifiableMap(models), modelBakery));
+    public static void onModelBake(ModelManager modelManager, ModelBakery modelBakery) {
+        ModLoader.get().postEvent(new ModelEvent.BakingCompleted(modelManager, modelBakery));
     }
 
     public static TextureAtlasSprite[] getFluidSprites(BlockAndTintGetter level, BlockPos pos, FluidState fluidStateIn) {
         IClientFluidTypeExtensions props = IClientFluidTypeExtensions.of(fluidStateIn);
         ResourceLocation overlayTexture = props.getOverlayTexture(fluidStateIn, level, pos);
+        @SuppressWarnings("deprecation")
+        var BLOCKS = TextureAtlas.LOCATION_BLOCKS;
+        var atlas = Minecraft.getInstance().getTextureAtlas(BLOCKS);
         return new TextureAtlasSprite[] {
-                Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(props.getStillTexture(fluidStateIn, level, pos)),
-                Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(props.getFlowingTexture(fluidStateIn, level, pos)),
-                overlayTexture == null ? null : Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(overlayTexture),
+            atlas.apply(props.getStillTexture(fluidStateIn, level, pos)),
+            atlas.apply(props.getFlowingTexture(fluidStateIn, level, pos)),
+            overlayTexture == null ? null : atlas.apply(overlayTexture),
         };
-    }
-
-    public static Material getBlockMaterial(ResourceLocation loc) {
-        return new Material(InventoryMenu.BLOCK_ATLAS, loc);
-    }
-
-    /*
-    public static void fillNormal(int[] faceData, Direction facing) {
-        fillNormal(faceData, facing, false);
-    }
-
-    /**
-     * internal, relies on fixed format of FaceBakery
-     * /
-    // TODO Do we need this?
-    public static void fillNormal(int[] faceData, Direction facing, boolean calculateNormals) {
-        Vector3f v2;
-        if (calculateNormals) {
-            Vector3f v1 = getVertexPos(faceData, 3);
-            Vector3f t1 = getVertexPos(faceData, 1);
-            v2 = getVertexPos(faceData, 2);
-            Vector3f t2 = getVertexPos(faceData, 0);
-            v1.sub(t1);
-            v2.sub(t2);
-            v2.cross(v1);
-            v2.normalize();
-        } else
-            v2 = new Vector3f(facing.getNormal().getX(), facing.getNormal().getY(), facing.getNormal().getZ());
-        int x = ((byte) Math.round(v2.x() * 127)) & 0xFF;
-        int y = ((byte) Math.round(v2.y() * 127)) & 0xFF;
-        int z = ((byte) Math.round(v2.z() * 127)) & 0xFF;
-
-        int normal = x | (y << 0x08) | (z << 0x10);
-
-        for(int i = 0; i < 4; i++)
-            faceData[i * 8 + 7] = normal;
-    }
-    */
-
-    private static Vector3f getVertexPos(int[] data, int vertex) {
-        int idx = vertex * 8;
-
-        float x = Float.intBitsToFloat(data[idx]);
-        float y = Float.intBitsToFloat(data[idx + 1]);
-        float z = Float.intBitsToFloat(data[idx + 2]);
-
-        return new Vector3f(x, y, z);
     }
 
     public static boolean calculateFaceWithoutAO(BlockAndTintGetter getter, BlockState state, BlockPos pos, BakedQuad quad, boolean isFaceCubic, float[] brightness, int[] lightmap) {
@@ -932,5 +894,40 @@ public class ForgeHooksClient {
         return ForgeEventFactoryClient.onScreenMouseDragPre(screen, mouseX, mouseY, mouseButton, dragX, dragY)
             || screen.mouseDragged(mouseX, mouseY, mouseButton, dragX, dragY)
             || ForgeEventFactoryClient.onScreenMouseDragPost(screen, mouseX, mouseY, mouseButton, dragX, dragY);
+    }
+
+    public static BlockModel deserializeBlockModel(BlockModel model, List<BlockElement> elements, JsonObject json, JsonDeserializationContext context) {
+        IUnbakedGeometry<?> geometry = null;
+        if (json.has("loader")) {
+            var name = ResourceLocation.parse(GsonHelper.getAsString(json, "loader"));
+            var loader = GeometryLoaderManager.get(name);
+            if (loader == null)
+                throw new JsonParseException(String.format(Locale.ENGLISH, "Model loader '%s' not found. Registered loaders: %s", name, GeometryLoaderManager.getLoaderList()));
+
+            geometry = loader.read(json, context);
+        }
+
+        if (geometry != null) {
+            elements.clear();
+            model.customData.setCustomGeometry(geometry);
+        }
+
+        if (json.has("transform")) {
+            JsonElement transform = json.get("transform");
+            model.customData.setRootTransform(context.deserialize(transform, Transformation.class));
+        }
+
+        if (json.has("render_type")) {
+            var renderTypeHintName = GsonHelper.getAsString(json, "render_type");
+            model.customData.setRenderTypeHint(ResourceLocation.parse(renderTypeHintName));
+        }
+
+        if (json.has("visibility")) {
+            var visibility = GsonHelper.getAsJsonObject(json, "visibility");
+            for (var part : visibility.entrySet())
+                model.customData.visibilityData.setVisibilityState(part.getKey(), part.getValue().getAsBoolean());
+        }
+
+        return model;
     }
 }

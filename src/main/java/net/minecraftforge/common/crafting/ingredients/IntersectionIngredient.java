@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 /** Ingredient that matches if all child ingredients match */
 public class IntersectionIngredient extends AbstractIngredient {
@@ -61,20 +62,14 @@ public class IntersectionIngredient extends AbstractIngredient {
 
     @SuppressWarnings("deprecation")
     @Override
-    public List<Holder<Item>> items() {
+    public Stream<Holder<Item>> items() {
         if (this.items == null) {
             var tmp = new ArrayList<Holder<Item>>();
 
-            for (var base : children.get(0).items()) {
+            children.get(0).items().forEach(base -> {
                 boolean allMatch = true;
                 for (int i = 1; i < children.size(); i++) {
-                    boolean match = false;
-                    for (var item : children.get(i).items()) {
-                        if (base.is(item)) {
-                            match = true;
-                            break;
-                        }
-                    }
+                    boolean match = children.get(i).items().anyMatch(base::is);
                     if (!match) {
                         allMatch = false;
                         break;
@@ -82,10 +77,10 @@ public class IntersectionIngredient extends AbstractIngredient {
                 }
                 if (allMatch)
                     tmp.add(base);
-            }
+            });
             this.items = Collections.unmodifiableList(tmp);
         }
-        return items;
+        return items.stream();
     }
 
     @Override

@@ -12,11 +12,13 @@ import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.client.renderer.block.model.FaceBakery;
+import net.minecraft.client.renderer.block.model.ItemModelGenerator;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SpriteContents;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -25,6 +27,8 @@ import net.minecraftforge.client.model.IModelBuilder;
 import net.minecraftforge.client.model.IQuadTransformer;
 import net.minecraftforge.client.model.QuadTransformers;
 import net.minecraftforge.client.model.SimpleModelState;
+
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -39,6 +43,7 @@ import java.util.regex.Pattern;
 /**
  * Helper for dealing with unbaked models and geometries.
  */
+@ApiStatus.Internal
 public class UnbakedGeometryHelper {
     private static final FaceBakery FACE_BAKERY = new FaceBakery();
 
@@ -64,11 +69,11 @@ public class UnbakedGeometryHelper {
      * <p>
      * The target atlas will always be {@link InventoryMenu#BLOCK_ATLAS}.
      */
-    public static Material resolveDirtyMaterial(@Nullable String tex, IGeometryBakingContext owner) {
+    public static Material resolveDirtyMaterial(@Nullable String tex, TextureSlots textures) {
         if (tex == null)
-            return new Material(InventoryMenu.BLOCK_ATLAS, MissingTextureAtlasSprite.getLocation());
+            return new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation());
         if (tex.startsWith("#"))
-            return owner.getMaterial(tex);
+            return textures.getMaterial(tex);
 
         // Attempt to convert a common (windows/linux/mac) filesystem path to a ResourceLocation.
         // This makes no promises, if it doesn't work, too bad, fix your mtl file.
@@ -79,9 +84,10 @@ public class UnbakedGeometryHelper {
             tex = namespace != null ? namespace + ":" + path : path;
         }
 
-        return new Material(InventoryMenu.BLOCK_ATLAS, ResourceLocation.parse(tex));
+        return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(tex));
     }
 
+    private static final ItemModelGenerator ITEM_MODEL_GENERATOR = new ItemModelGenerator();
     /**
      * Creates a list of {@linkplain BlockElement block elements} in the shape of the specified sprite contents.
      * These can later be baked using the same, or another texture.
@@ -89,7 +95,7 @@ public class UnbakedGeometryHelper {
      * The {@link Direction#NORTH} and {@link Direction#SOUTH} faces take up the whole surface.
      */
     public static List<BlockElement> createUnbakedItemElements(int layerIndex, SpriteContents spriteContents) {
-        return ModelBakery.ITEM_MODEL_GENERATOR.processFrames(layerIndex, "layer" + layerIndex, spriteContents);
+        return ITEM_MODEL_GENERATOR.processFrames(layerIndex, "layer" + layerIndex, spriteContents);
     }
 
     /**
@@ -162,7 +168,7 @@ public class UnbakedGeometryHelper {
     public static void bakeElements(IModelBuilder<?> builder, List<BlockElement> elements, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
         for (BlockElement element : elements) {
             element.faces.forEach((side, face) -> {
-                var sprite = spriteGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, ResourceLocation.parse(face.texture())));
+                var sprite = spriteGetter.apply(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(face.texture())));
                 var quad = bakeElementFace(element, face, sprite, side, modelState, element.lightEmission);
                 if (face.cullForDirection() == null)
                     builder.addUnculledFace(quad);

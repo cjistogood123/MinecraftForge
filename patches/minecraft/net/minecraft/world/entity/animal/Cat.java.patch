@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/animal/Cat.java
 +++ b/net/minecraft/world/entity/animal/Cat.java
-@@ -371,10 +_,10 @@
+@@ -369,10 +_,10 @@
                      }
                  } else if (this.isFood(itemstack) && this.getHealth() < this.getMaxHealth()) {
                      if (!this.level().isClientSide()) {
@@ -12,7 +12,7 @@
                      }
  
                      return InteractionResult.SUCCESS;
-@@ -435,7 +_,7 @@
+@@ -433,7 +_,7 @@
      }
  
      private void tryToTame(Player p_333297_) {

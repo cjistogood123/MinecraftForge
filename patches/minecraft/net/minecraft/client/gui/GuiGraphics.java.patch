@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/gui/GuiGraphics.java
 +++ b/net/minecraft/client/gui/GuiGraphics.java
-@@ -53,7 +_,7 @@
+@@ -52,7 +_,7 @@
  import org.joml.Vector2ic;
  
  @OnlyIn(Dist.CLIENT)
@@ -9,7 +9,7 @@
      public static final float MAX_GUI_Z = 10000.0F;
      public static final float MIN_GUI_Z = -10000.0F;
      private static final int EXTRA_SPACE_AFTER_FIRST_TOOLTIP_LINE = 2;
-@@ -227,6 +_,11 @@
+@@ -229,6 +_,11 @@
      }
  
      public int drawString(Font p_283343_, @Nullable String p_281896_, int p_283569_, int p_283418_, int p_281560_, boolean p_282130_) {
@@ -21,7 +21,7 @@
          return p_281896_ == null
              ? 0
              : p_283343_.drawInBatch(
-@@ -248,6 +_,11 @@
+@@ -250,6 +_,11 @@
      }
  
      public int drawString(Font p_282636_, FormattedCharSequence p_281596_, int p_281586_, int p_282816_, int p_281743_, boolean p_282394_) {
@@ -33,7 +33,7 @@
          return p_282636_.drawInBatch(
              p_281596_,
              (float)p_281586_,
-@@ -872,6 +_,7 @@
+@@ -859,6 +_,7 @@
                  CrashReport crashreport = CrashReport.forThrowable(throwable, "Rendering item");
                  CrashReportCategory crashreportcategory = crashreport.addCategory("Item being rendered");
                  crashreportcategory.setDetail("Item Type", () -> String.valueOf(p_281675_.getItem()));
@@ -41,7 +41,7 @@
                  crashreportcategory.setDetail("Item Components", () -> String.valueOf(p_281675_.getComponents()));
                  crashreportcategory.setDetail("Item Foil", () -> String.valueOf(p_281675_.hasFoil()));
                  throw new ReportedException(crashreport);
-@@ -892,13 +_,24 @@
+@@ -879,13 +_,24 @@
              this.renderItemCount(p_282005_, p_283349_, p_282641_, p_282146_, p_282803_);
              this.renderItemCooldown(p_283349_, p_282641_, p_282146_);
              this.pose.popPose();
@@ -66,7 +66,7 @@
      }
  
      public void renderTooltip(Font p_283128_, List<Component> p_282716_, Optional<TooltipComponent> p_281682_, int p_283678_, int p_281696_) {
-@@ -908,8 +_,7 @@
+@@ -895,8 +_,7 @@
      public void renderTooltip(
          Font p_362491_, List<Component> p_368544_, Optional<TooltipComponent> p_362815_, int p_366300_, int p_368952_, @Nullable ResourceLocation p_368469_
      ) {
@@ -76,7 +76,7 @@
          this.renderTooltipInternal(p_362491_, list, p_366300_, p_368952_, DefaultTooltipPositioner.INSTANCE, p_368469_);
      }
  
-@@ -922,7 +_,22 @@
+@@ -909,7 +_,22 @@
      }
  
      public void renderComponentTooltip(Font p_282739_, List<Component> p_281832_, int p_282191_, int p_282446_) {
@@ -100,7 +100,7 @@
      }
  
      public void renderComponentTooltip(Font p_369090_, List<Component> p_365405_, int p_368143_, int p_366244_, @Nullable ResourceLocation p_364763_) {
-@@ -964,11 +_,13 @@
+@@ -951,11 +_,13 @@
          @Nullable ResourceLocation p_368234_
      ) {
          if (!p_282615_.isEmpty()) {
@@ -115,7 +115,7 @@
                  if (k > i) {
                      i = k;
                  }
-@@ -978,18 +_,19 @@
+@@ -965,18 +_,19 @@
  
              int i2 = i;
              int j2 = j;
@@ -138,7 +138,7 @@
                  k1 += clienttooltipcomponent1.getHeight(p_282675_) + (l1 == 0 ? 2 : 0);
              }
  
-@@ -997,7 +_,7 @@
+@@ -984,7 +_,7 @@
  
              for (int k2 = 0; k2 < p_282615_.size(); k2++) {
                  ClientTooltipComponent clienttooltipcomponent2 = p_282615_.get(k2);
@@ -147,7 +147,7 @@
                  k1 += clienttooltipcomponent2.getHeight(p_282675_) + (k2 == 0 ? 2 : 0);
              }
  
-@@ -1054,6 +_,10 @@
+@@ -1041,6 +_,10 @@
                  }
              }
          }

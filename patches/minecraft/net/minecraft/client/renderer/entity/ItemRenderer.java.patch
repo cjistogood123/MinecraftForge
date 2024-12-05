@@ -1,54 +1,11 @@
 --- a/net/minecraft/client/renderer/entity/ItemRenderer.java
 +++ b/net/minecraft/client/renderer/entity/ItemRenderer.java
-@@ -152,7 +_,7 @@
-         float p_368655_
-     ) {
-         p_366810_.pushPose();
--        p_369691_.getTransforms().getTransform(p_369628_).apply(p_365876_, p_366810_);
-+        p_369691_ = p_369691_.applyTransform(p_369628_, p_366810_, p_365876_);
-         p_366810_.translate(-0.5F, -0.5F, p_368655_);
-         this.renderItem(p_368265_, p_369628_, p_366810_, p_363829_, p_363235_, p_368132_, p_369691_, p_366607_);
-         p_366810_.popPose();
-@@ -169,7 +_,8 @@
-         boolean p_366488_
-     ) {
-         if (!p_367824_.isCustomRenderer() && (!p_364096_.is(Items.TRIDENT) || p_366488_)) {
--            RenderType rendertype = ItemBlockRenderTypes.getRenderType(p_364096_);
-+            for (var model : p_367824_.getRenderPasses(p_364096_, true)) {
-+            for (var rendertype : model.getRenderTypes(p_364096_, true)) {
-             VertexConsumer vertexconsumer;
-             if (hasAnimatedTexture(p_364096_) && p_364096_.hasFoil()) {
-                 PoseStack.Pose posestack$pose = p_370127_.last().copy();
-@@ -185,8 +_,11 @@
+@@ -130,7 +_,7 @@
+                 f3 = 1.0F;
              }
  
-             this.renderModelLists(p_367824_, p_364096_, p_363416_, p_367651_, p_370127_, vertexconsumer);
-+            }
-+            }
-         } else {
--            this.blockEntityRenderer.renderByItem(p_364096_, p_362035_, p_370127_, p_365365_, p_363416_, p_367651_);
-+            var blockEntityRenderer = net.minecraftforge.client.extensions.common.IClientItemExtensions.of(p_364096_).getCustomRenderer();
-+            blockEntityRenderer.renderByItem(p_364096_, p_362035_, p_370127_, p_365365_, p_363416_, p_367651_);
-         }
-     }
- 
-@@ -232,7 +_,7 @@
-             float f1 = (float)ARGB.red(i) / 255.0F;
-             float f2 = (float)ARGB.green(i) / 255.0F;
-             float f3 = (float)ARGB.blue(i) / 255.0F;
 -            p_115164_.putBulkData(posestack$pose, bakedquad, f1, f2, f3, f, p_115167_, p_115168_);
 +            p_115164_.putBulkData(posestack$pose, bakedquad, f1, f2, f3, f, p_115167_, p_115168_, true);
          }
      }
  
-@@ -275,6 +_,10 @@
-     @Override
-     public void onResourceManagerReload(ResourceManager p_115105_) {
-         this.itemModelShaper.invalidateCache();
-+    }
-+
-+    public BlockEntityWithoutLevelRenderer getBlockEntityRenderer() {
-+        return blockEntityRenderer;
-     }
- 
-     @Nullable

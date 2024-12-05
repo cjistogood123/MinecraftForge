@@ -55,8 +55,8 @@
              }
  
              if (this.dragonDeathTime == 1 && !this.isSilent()) {
-@@ -551,7 +_,8 @@
-         this.move(MoverType.SELF, new Vec3(0.0, 0.1F, 0.0));
+@@ -558,7 +_,8 @@
+ 
          if (this.dragonDeathTime == 200 && this.level() instanceof ServerLevel serverlevel1) {
              if (serverlevel1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
 -                ExperienceOrb.award(serverlevel1, this.position(), Mth.floor((float)i * 0.2F));
@@ -65,7 +65,7 @@
              }
  
              if (this.dragonFight != null) {
-@@ -864,6 +_,7 @@
+@@ -871,6 +_,7 @@
      @Override
      public void recreateFromPacket(ClientboundAddEntityPacket p_218825_) {
          super.recreateFromPacket(p_218825_);
@@ -73,7 +73,7 @@
          EnderDragonPart[] aenderdragonpart = this.getSubEntities();
  
          for (int i = 0; i < aenderdragonpart.length; i++) {
-@@ -879,5 +_,15 @@
+@@ -886,5 +_,15 @@
      @Override
      protected float sanitizeScale(float p_333905_) {
          return 1.0F;

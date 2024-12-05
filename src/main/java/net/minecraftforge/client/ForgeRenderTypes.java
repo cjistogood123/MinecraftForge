@@ -12,6 +12,8 @@ import net.minecraft.client.renderer.RenderStateShard.TextureStateShard;
 import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.TriState;
@@ -23,16 +25,21 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum ForgeRenderTypes {
-    ITEM_LAYERED_SOLID(()-> getItemLayeredSolid(InventoryMenu.BLOCK_ATLAS)),
-    ITEM_LAYERED_CUTOUT(()-> getItemLayeredCutout(InventoryMenu.BLOCK_ATLAS)),
-    ITEM_LAYERED_CUTOUT_MIPPED(()-> getItemLayeredCutoutMipped(InventoryMenu.BLOCK_ATLAS)),
-    ITEM_LAYERED_TRANSLUCENT(()-> getItemLayeredTranslucent(InventoryMenu.BLOCK_ATLAS)),
-    ITEM_UNSORTED_TRANSLUCENT(()-> getUnsortedTranslucent(InventoryMenu.BLOCK_ATLAS)),
-    ITEM_UNLIT_TRANSLUCENT(()-> getUnlitTranslucent(InventoryMenu.BLOCK_ATLAS)),
-    ITEM_UNSORTED_UNLIT_TRANSLUCENT(()-> getUnlitTranslucent(InventoryMenu.BLOCK_ATLAS, false)),
-    TRANSLUCENT_ON_PARTICLES_TARGET(() -> getTranslucentParticlesTarget(InventoryMenu.BLOCK_ATLAS));
+    ITEM_LAYERED_SOLID(()-> getItemLayeredSolid(blockAtlas())),
+    ITEM_LAYERED_CUTOUT(()-> getItemLayeredCutout(blockAtlas())),
+    ITEM_LAYERED_CUTOUT_MIPPED(()-> getItemLayeredCutoutMipped(blockAtlas())),
+    ITEM_LAYERED_TRANSLUCENT(()-> getItemLayeredTranslucent(blockAtlas())),
+    ITEM_UNSORTED_TRANSLUCENT(()-> getUnsortedTranslucent(blockAtlas())),
+    ITEM_UNLIT_TRANSLUCENT(()-> getUnlitTranslucent(blockAtlas())),
+    ITEM_UNSORTED_UNLIT_TRANSLUCENT(()-> getUnlitTranslucent(blockAtlas(), false)),
+    TRANSLUCENT_ON_PARTICLES_TARGET(() -> getTranslucentParticlesTarget(blockAtlas()));
 
     public static TriState enableTextTextureLinearFiltering = TriState.FALSE;
+
+    @SuppressWarnings("deprecation")
+    private static final ResourceLocation blockAtlas() {
+        return TextureAtlas.LOCATION_BLOCKS;
+    }
 
     /**
      * @return A RenderType fit for multi-layer solid item rendering.
@@ -348,7 +355,7 @@ public enum ForgeRenderTypes {
                 this.mipmap = mipmap.get();
                 TextureManager manager = Minecraft.getInstance().getTextureManager();
                 var texture = manager.getTexture(resLoc);
-                texture.setFilter(this.blur.toBoolean(texture.getDefaultBlur()), this.mipmap);
+                texture.setFilter(this.blur, this.mipmap);
                 RenderSystem.setShaderTexture(0, resLoc);
             };
         }

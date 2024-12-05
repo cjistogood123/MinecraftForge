@@ -5,18 +5,18 @@
  @OnlyIn(Dist.CLIENT)
  public class ItemBlockRenderTypes {
 +    @Deprecated
-     private static final Map<Block, RenderType> TYPE_BY_BLOCK = Util.make(Maps.newHashMap(), p_357825_ -> {
+     private static final Map<Block, RenderType> TYPE_BY_BLOCK = Util.make(Maps.newHashMap(), p_374604_ -> {
          RenderType rendertype = RenderType.tripwire();
-         p_357825_.put(Blocks.TRIPWIRE, rendertype);
-@@ -340,6 +_,7 @@
-         p_357825_.put(Blocks.BUBBLE_COLUMN, rendertype3);
-         p_357825_.put(Blocks.TINTED_GLASS, rendertype3);
+         p_374604_.put(Blocks.TRIPWIRE, rendertype);
+@@ -345,6 +_,7 @@
+         p_374604_.put(Blocks.BUBBLE_COLUMN, rendertype3);
+         p_374604_.put(Blocks.TINTED_GLASS, rendertype3);
      });
 +    @Deprecated
      private static final Map<Fluid, RenderType> TYPE_BY_FLUID = Util.make(Maps.newHashMap(), p_109290_ -> {
          RenderType rendertype = RenderType.translucent();
          p_109290_.put(Fluids.FLOWING_WATER, rendertype);
-@@ -347,6 +_,8 @@
+@@ -352,6 +_,8 @@
      });
      private static boolean renderCutout;
  
@@ -25,7 +25,7 @@
      public static RenderType getChunkRenderType(BlockState p_109283_) {
          Block block = p_109283_.getBlock();
          if (block instanceof LeavesBlock) {
-@@ -357,6 +_,8 @@
+@@ -362,6 +_,8 @@
          }
      }
  
@@ -34,7 +34,7 @@
      public static RenderType getMovingBlockRenderType(BlockState p_109294_) {
          Block block = p_109294_.getBlock();
          if (block instanceof LeavesBlock) {
-@@ -371,6 +_,8 @@
+@@ -376,6 +_,8 @@
          }
      }
  
@@ -43,7 +43,7 @@
      public static RenderType getRenderType(BlockState p_364446_) {
          RenderType rendertype = getChunkRenderType(p_364446_);
          return rendertype == RenderType.translucent() ? Sheets.translucentItemSheet() : Sheets.cutoutBlockSheet();
-@@ -385,12 +_,77 @@
+@@ -390,12 +_,77 @@
          }
      }
  

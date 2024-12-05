@@ -8,6 +8,8 @@ package net.minecraftforge.client.event;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.Cancelable;
@@ -17,6 +19,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -32,6 +35,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.SkullModelBase;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
@@ -45,6 +50,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.PlayerSkin.Model;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
@@ -57,6 +63,8 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SkullBlock.Type;
 import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
 import net.minecraftforge.client.event.sound.PlayStreamingSourceEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -86,8 +94,9 @@ public final class ForgeEventFactoryClient {
     /**
      * Post an event to the {@link ModLoader#get()} event bus
      */
-    private static <T extends Event & IModBusEvent> void postModBus(T e) {
+    private static <T extends Event & IModBusEvent> T postModBus(T e) {
         ML.postEvent(e);
+        return e;
     }
 
     public static void onGatherLayers(Map<EntityType<?>, EntityRenderer<?, ?>> renderers, Map<Model, EntityRenderer<? extends Player, ?>> playerRenderers, Context context) {
@@ -278,5 +287,15 @@ public final class ForgeEventFactoryClient {
 
     public static ComputeFovModifierEvent fireFovModifierEvent(Player entity, float modifier, float scale) {
         return fire(new ComputeFovModifierEvent(entity, modifier, scale));
+    }
+
+    public static void onCreateSpecialBlockRenderers(Map<Block, SpecialModelRenderer.Unbaked> map) {
+        post(new CreateSpecialBlockRendererEvent(map));
+    }
+
+    public static Map<Type, Function<EntityModelSet, SkullModelBase>> onCreateSkullModels() {
+        var builder = ImmutableMap.<Type, Function<EntityModelSet, SkullModelBase>>builder();
+        postModBus(new EntityRenderersEvent.CreateSkullModels(builder));
+        return builder.build();
     }
 }

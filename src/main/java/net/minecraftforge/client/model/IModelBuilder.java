@@ -11,25 +11,26 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.Direction;
-import net.minecraftforge.client.RenderTypeGroup;
-
 import java.util.List;
 
 /**
  * Base interface for any object that collects culled and unculled faces and bakes them into a model.
  * <p>
- * Provides a generic base implementation via {@link #of(boolean, boolean, boolean, ItemTransforms, ItemOverrides, TextureAtlasSprite, RenderTypeGroup)}
+ * Provides a generic base implementation via {@link #of(boolean, boolean, boolean, ItemTransforms, ItemOverrides, TextureAtlasSprite)}
  * and a quad-collecting alternative via {@link #collecting(List)}.
  */
 public interface IModelBuilder<T extends IModelBuilder<T>> {
     /**
      * Creates a new model builder that uses the provided attributes in the final baked model.
      */
-    static IModelBuilder<?> of(boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d,
-                               ItemTransforms transforms, TextureAtlasSprite particle,
-                               RenderTypeGroup renderTypes
+    static IModelBuilder<?> of(
+        boolean hasAmbientOcclusion,
+        boolean usesBlockLight,
+        boolean isGui3d,
+        ItemTransforms transforms,
+        TextureAtlasSprite particle
     ){
-        return new Simple(hasAmbientOcclusion, usesBlockLight, isGui3d, transforms, particle, renderTypes);
+        return new Simple(hasAmbientOcclusion, usesBlockLight, isGui3d, transforms, particle);
     }
 
     /**
@@ -48,13 +49,12 @@ public interface IModelBuilder<T extends IModelBuilder<T>> {
 
     class Simple implements IModelBuilder<Simple> {
         private final SimpleBakedModel.Builder builder;
-        private final RenderTypeGroup renderTypes;
 
-        private Simple(boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d,
-                       ItemTransforms transforms, TextureAtlasSprite particle, RenderTypeGroup renderTypes
+        private Simple(
+            boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d,
+            ItemTransforms transforms, TextureAtlasSprite particle
         ) {
             this.builder = new SimpleBakedModel.Builder(hasAmbientOcclusion, usesBlockLight, isGui3d, transforms).particle(particle);
-            this.renderTypes = renderTypes;
         }
 
         @Override
@@ -72,7 +72,7 @@ public interface IModelBuilder<T extends IModelBuilder<T>> {
         @Deprecated
         @Override
         public BakedModel build() {
-            return builder.renderTypes(renderTypes).build();
+            return builder.build();
         }
     }
 

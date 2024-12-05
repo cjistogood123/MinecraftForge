@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/renderer/entity/layers/WingsLayer.java
 +++ b/net/minecraft/client/renderer/entity/layers/WingsLayer.java
-@@ -49,7 +_,7 @@
+@@ -57,7 +_,7 @@
      }
  
      @Nullable

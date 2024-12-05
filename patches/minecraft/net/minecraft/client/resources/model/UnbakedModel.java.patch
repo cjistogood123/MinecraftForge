@@ -1,0 +1,24 @@
+--- a/net/minecraft/client/resources/model/UnbakedModel.java
++++ b/net/minecraft/client/resources/model/UnbakedModel.java
+@@ -13,6 +_,10 @@
+     boolean DEFAULT_AMBIENT_OCCLUSION = true;
+     UnbakedModel.GuiLight DEFAULT_GUI_LIGHT = UnbakedModel.GuiLight.SIDE;
+ 
++    default BakedModel bake(TextureSlots textures, ModelBaker baker, ModelState state) {
++        return bake(textures, baker, state, this.getAmbientOcclusion(), this.getGuiLight().lightLikeBlock(), this.getTransforms());
++    }
++
+     BakedModel bake(TextureSlots p_376037_, ModelBaker p_250133_, ModelState p_119536_, boolean p_378145_, boolean p_377763_, ItemTransforms p_375499_);
+ 
+     @Nullable
+@@ -135,6 +_,10 @@
+ 
+         public boolean lightLikeBlock() {
+             return this == SIDE;
++        }
++
++        public String getSerializedName() {
++            return name;
+         }
+     }
+ }

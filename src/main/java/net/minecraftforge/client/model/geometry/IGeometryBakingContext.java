@@ -23,27 +23,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface IGeometryBakingContext {
     /**
-     * {@return the name of the model being baked for logging and caching purposes.}
-     */
-    String getModelName();
-
-    /**
-     * Checks if a material is present in the model.
-     *
-     * @param name The name of the material
-     * @return true if the material is present, false otherwise
-     */
-    boolean hasMaterial(String name);
-
-    /**
-     * Resolves the final texture name, taking into account texture aliases and replacements.
-     *
-     * @param name The name of the material
-     * @return The material, or the missing texture if not found
-     */
-    Material getMaterial(String name);
-
-    /**
      * {@return true if this model should render in 3D in a GUI, false otherwise}
      */
     boolean isGui3d();

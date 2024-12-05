@@ -18,11 +18,16 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
+
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 
 public class DatagenModLoader {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -33,13 +38,49 @@ public class DatagenModLoader {
         return runningDataGen;
     }
 
-    public static void begin(
-        Set<String> patterns, Path output, Collection<Path> inputs, Collection<Path> existingPacks, Set<String> existingMods,
-        boolean genServer, boolean genClient, boolean genDev, boolean genReports,
-        boolean validate, boolean flat, String assetIndex, File assetsDir
+    public static DatagenModLoader setup(OptionParser parser, boolean client) {
+        return new DatagenModLoader(parser, client);
+    }
+
+    private final OptionParser parser;
+    private final boolean client;
+    private final OptionSpec<String> existing;
+    private final OptionSpec<String> existingMod;
+    private final OptionSpec<String> mod;
+    private final OptionSpec<String> assetIndex;
+    private final OptionSpec<File> gameDir;
+    private final OptionSpec<File> assetsDir;
+    private final OptionSpec<Void> flat;
+
+    private DatagenModLoader(OptionParser parser, boolean client) {
+        this.gameDir = parser.accepts("gameDir").withRequiredArg().ofType(java.io.File.class).defaultsTo(new java.io.File(".")).required(); //Need by modlauncher, so lets just eat it
+        this.parser = parser;
+        this.client = client;
+        this.existing = parser.accepts("existing", "Existing resource packs that generated resources can reference").withRequiredArg();
+        this.existingMod = parser.accepts("existing-mod", "Existing mods that generated resources can reference the resource packs of").withRequiredArg();
+        this.mod = parser.accepts("mod", "A modid to dump").withRequiredArg().withValuesSeparatedBy(",");
+        this.flat = parser.accepts("flat", "Do not append modid prefix to output directory when generating for multiple mods");
+        this.assetIndex = parser.accepts("assetIndex").withRequiredArg();
+        this.assetsDir = parser.accepts("assetsDir").withRequiredArg().ofType(java.io.File.class);
+    }
+
+    public boolean hasArgs(OptionSet options) {
+        return options.specs().size() != 1 || !options.has(gameDir);
+    }
+
+    public boolean run(
+        OptionSet options, Path output, Collection<Path> inputs,
+        boolean genServer, boolean genClient, boolean genDev, boolean genReports, boolean validate
     ) {
+        var existingPacks = options.valuesOf(this.existing).stream().map(Paths::get).toList();
+        var existingMods = new HashSet<>(options.valuesOf(this.existingMod));
+        var patterns = new HashSet<>(options.valuesOf(this.mod));
+        var flat = patterns.isEmpty() || options.has(this.flat);
+        var assetIndex = options.valueOf(this.assetIndex);
+        var assetsDir = options.valueOf(this.assetsDir);
+
         if (patterns.contains("minecraft") && patterns.size() == 1)
-            return;
+            return true;
 
         runningDataGen = true;
         Bootstrap.bootStrap();
@@ -77,5 +118,7 @@ public class DatagenModLoader {
             ), config, existingFileHelper)
         );
         config.runAll();
+
+        return false;
     }
 }

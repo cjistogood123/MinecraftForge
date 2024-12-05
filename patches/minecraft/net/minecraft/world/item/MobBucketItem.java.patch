@@ -4,20 +4,20 @@
  
  public class MobBucketItem extends BucketItem {
      private static final MapCodec<TropicalFish.Variant> VARIANT_FIELD_CODEC = TropicalFish.Variant.CODEC.fieldOf("BucketVariantTag");
--    private final EntityType<?> type;
+-    private final EntityType<? extends Mob> type;
 -    private final SoundEvent emptySound;
-+    private final java.util.function.Supplier<? extends EntityType<?>> entityTypeSupplier;
++    private final java.util.function.Supplier<? extends EntityType<? extends Mob>> entityTypeSupplier;
 +    private final java.util.function.Supplier<? extends SoundEvent> emptySoundSupplier;
  
 +    @Deprecated
-     public MobBucketItem(EntityType<?> p_151137_, Fluid p_151138_, SoundEvent p_151139_, Item.Properties p_151140_) {
+     public MobBucketItem(EntityType<? extends Mob> p_151137_, Fluid p_151138_, SoundEvent p_151139_, Item.Properties p_151140_) {
 -        super(p_151138_, p_151140_);
 -        this.type = p_151137_;
 -        this.emptySound = p_151139_;
 +        this(() -> p_151137_, () -> p_151138_, () -> p_151139_, p_151140_);
 +    }
 +
-+    public MobBucketItem(java.util.function.Supplier<? extends EntityType<?>> entitySupplier, java.util.function.Supplier<? extends Fluid> fluidSupplier, java.util.function.Supplier<? extends SoundEvent> soundSupplier, Item.Properties properties) {
++    public MobBucketItem(java.util.function.Supplier<? extends EntityType<? extends Mob>> entitySupplier, java.util.function.Supplier<? extends Fluid> fluidSupplier, java.util.function.Supplier<? extends SoundEvent> soundSupplier, Item.Properties properties) {
 +        super(fluidSupplier, properties);
 +        this.emptySoundSupplier = soundSupplier;
 +        this.entityTypeSupplier = entitySupplier;
@@ -33,12 +33,12 @@
      }
  
      private void spawn(ServerLevel p_151142_, ItemStack p_151143_, BlockPos p_151144_) {
--        Entity entity = this.type.create(p_151142_, EntityType.createDefaultStackConfig(p_151142_, p_151143_, null), p_151144_, EntitySpawnReason.BUCKET, true, false);
-+        Entity entity = this.getFishType().create(p_151142_, EntityType.createDefaultStackConfig(p_151142_, p_151143_, null), p_151144_, EntitySpawnReason.BUCKET, true, false);
-         if (entity instanceof Bucketable bucketable) {
+-        Mob mob = this.type.create(p_151142_, EntityType.createDefaultStackConfig(p_151142_, p_151143_, null), p_151144_, EntitySpawnReason.BUCKET, true, false);
++        Mob mob = this.getFishType().create(p_151142_, EntityType.createDefaultStackConfig(p_151142_, p_151143_, null), p_151144_, EntitySpawnReason.BUCKET, true, false);
+         if (mob instanceof Bucketable bucketable) {
              CustomData customdata = p_151143_.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
              bucketable.loadFromBucketTag(customdata.copyTag());
-@@ -63,7 +_,7 @@
+@@ -64,7 +_,7 @@
  
      @Override
      public void appendHoverText(ItemStack p_151155_, Item.TooltipContext p_329546_, List<Component> p_151157_, TooltipFlag p_151158_) {
@@ -47,13 +47,13 @@
              CustomData customdata = p_151155_.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
              if (customdata.isEmpty()) {
                  return;
-@@ -91,5 +_,13 @@
+@@ -92,5 +_,13 @@
                  p_151157_.add(mutablecomponent);
              }
          }
 +    }
 +
-+    protected EntityType<?> getFishType() {
++    protected EntityType<? extends Mob> getFishType() {
 +        return entityTypeSupplier.get();
 +    }
 +

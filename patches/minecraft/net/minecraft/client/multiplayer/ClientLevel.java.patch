@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/multiplayer/ClientLevel.java
 +++ b/net/minecraft/client/multiplayer/ClientLevel.java
-@@ -118,6 +_,7 @@
+@@ -123,6 +_,7 @@
          p_194170_.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache(p_194181_ -> this.calculateBlockTint(p_194181_, BiomeColors.GRASS_COLOR_RESOLVER)));
          p_194170_.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache(p_194177_ -> this.calculateBlockTint(p_194177_, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
          p_194170_.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache(p_194168_ -> this.calculateBlockTint(p_194168_, BiomeColors.WATER_COLOR_RESOLVER)));
@@ -8,7 +8,7 @@
      });
      private final ClientChunkCache chunkSource;
      private final Deque<Runnable> lightUpdateQueue = Queues.newArrayDeque();
-@@ -126,6 +_,8 @@
+@@ -131,6 +_,8 @@
      private final int seaLevel;
      private boolean tickDayTime;
      private static final Set<Item> MARKER_PARTICLE_ITEMS = Set.of(Items.BARRIER, Items.LIGHT);
@@ -17,7 +17,7 @@
  
      public void handleBlockChangedAck(int p_233652_) {
          this.blockStatePredictionHandler.endPredictionsUpTo(p_233652_, this);
-@@ -192,6 +_,8 @@
+@@ -197,6 +_,8 @@
          this.serverSimulationDistance = p_364305_;
          this.updateSkyBrightness();
          this.prepareWeather();
@@ -26,7 +26,7 @@
      }
  
      public void queueLightUpdate(Runnable p_194172_) {
-@@ -274,6 +_,7 @@
+@@ -279,6 +_,7 @@
          p_104640_.setOldPosAndRot();
          p_104640_.tickCount++;
          Profiler.get().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(p_104640_.getType()).toString());
@@ -34,7 +34,7 @@
          p_104640_.tick();
          Profiler.get().pop();
  
-@@ -326,8 +_,10 @@
+@@ -330,8 +_,10 @@
      }
  
      public void addEntity(Entity p_104741_) {
@@ -45,7 +45,7 @@
      }
  
      public void removeEntity(int p_171643_, Entity.RemovalReason p_171644_) {
-@@ -498,6 +_,12 @@
+@@ -502,6 +_,12 @@
          float p_263349_,
          long p_263408_
      ) {
@@ -58,7 +58,7 @@
          if (p_263381_ == this.minecraft.player) {
              this.playSound(p_263372_, p_263404_, p_263365_, p_263335_.value(), p_263417_, p_263416_, p_263349_, false, p_263408_);
          }
-@@ -507,6 +_,12 @@
+@@ -511,6 +_,12 @@
      public void playSeededSound(
          @Nullable Player p_263514_, Entity p_263536_, Holder<SoundEvent> p_263518_, SoundSource p_263487_, float p_263538_, float p_263524_, long p_263509_
      ) {
@@ -71,7 +71,7 @@
          if (p_263514_ == this.minecraft.player) {
              this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(p_263518_.value(), p_263487_, p_263538_, p_263524_, p_263536_, p_263509_));
          }
-@@ -943,6 +_,24 @@
+@@ -953,6 +_,24 @@
          return this.seaLevel;
      }
  
@@ -96,7 +96,7 @@
      @OnlyIn(Dist.CLIENT)
      public static class ClientLevelData implements WritableLevelData {
          private final boolean hardcore;
-@@ -1031,6 +_,7 @@
+@@ -1041,6 +_,7 @@
          }
  
          public void setDifficulty(Difficulty p_104852_) {
@@ -104,9 +104,9 @@
              this.difficulty = p_104852_;
          }
  
-@@ -1067,11 +_,26 @@
-             if (p_171712_ instanceof AbstractClientPlayer) {
-                 ClientLevel.this.players.add((AbstractClientPlayer)p_171712_);
+@@ -1084,6 +_,12 @@
+                     break;
+                 default:
              }
 +
 +            if (p_171712_.isMultipartEntity()) {
@@ -117,8 +117,11 @@
          }
  
          public void onTrackingEnd(Entity p_171716_) {
-             p_171716_.unRide();
-             ClientLevel.this.players.remove(p_171716_);
+@@ -1097,6 +_,15 @@
+                     ClientLevel.this.dragonParts.removeAll(Arrays.asList(enderdragon.getSubEntities()));
+                     break;
+                 default:
++            }
 +
 +            p_171716_.onRemovedFromWorld();
 +            net.minecraftforge.event.ForgeEventFactory.onEntityLeaveLevel(p_171716_, ClientLevel.this);
@@ -127,7 +130,6 @@
 +               for (var part : p_171716_.getParts()) {
 +                  ClientLevel.this.partEntities.remove(part.getId());
 +               }
-+            }
+             }
          }
  
-         public void onSectionChange(Entity p_233660_) {

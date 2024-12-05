@@ -46,20 +46,20 @@ public abstract class ModelEvent extends Event {
      * only on the {@linkplain LogicalSide#CLIENT logical client}.</p>
      */
     public static class ModifyBakingResult extends ModelEvent implements IModBusEvent {
-        private final Map<ModelResourceLocation, BakedModel> models;
         private final ModelBakery modelBakery;
+        private final ModelBakery.BakingResult results;
 
         @ApiStatus.Internal
-        public ModifyBakingResult(Map<ModelResourceLocation, BakedModel> models, ModelBakery modelBakery) {
-            this.models = models;
+        public ModifyBakingResult(ModelBakery modelBakery, ModelBakery.BakingResult results) {
             this.modelBakery = modelBakery;
+            this.results = results;
         }
 
         /**
          * @return the modifiable registry map of models and their model names
          */
-        public Map<ModelResourceLocation, BakedModel> getModels() {
-            return models;
+        public ModelBakery.BakingResult getResults() {
+            return results;
         }
 
         /**
@@ -83,13 +83,11 @@ public abstract class ModelEvent extends Event {
      */
     public static class BakingCompleted extends ModelEvent implements IModBusEvent {
         private final ModelManager modelManager;
-        private final Map<ModelResourceLocation, BakedModel> models;
         private final ModelBakery modelBakery;
 
         @ApiStatus.Internal
-        public BakingCompleted(ModelManager modelManager, Map<ModelResourceLocation, BakedModel> models, ModelBakery modelBakery) {
+        public BakingCompleted(ModelManager modelManager, ModelBakery modelBakery) {
             this.modelManager = modelManager;
-            this.models = models;
             this.modelBakery = modelBakery;
         }
 
@@ -98,13 +96,6 @@ public abstract class ModelEvent extends Event {
          */
         public ModelManager getModelManager() {
             return modelManager;
-        }
-
-        /**
-         * @return an unmodifiable view of the registry map of models and their model names
-         */
-        public Map<ModelResourceLocation, BakedModel> getModels() {
-            return models;
         }
 
         /**

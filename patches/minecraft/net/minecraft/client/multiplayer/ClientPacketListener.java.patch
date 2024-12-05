@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/multiplayer/ClientPacketListener.java
 +++ b/net/minecraft/client/multiplayer/ClientPacketListener.java
-@@ -451,6 +_,7 @@
+@@ -452,6 +_,7 @@
  
          this.minecraft.debugRenderer.clear();
          this.minecraft.player.resetPos();
@@ -57,7 +57,7 @@
      }
  
      @Override
-@@ -2516,6 +_,8 @@
+@@ -2530,6 +_,8 @@
      }
  
      public void sendChat(String p_249888_) {
@@ -66,7 +66,7 @@
          Instant instant = Instant.now();
          long i = Crypt.SaltSupplier.getLong();
          LastSeenMessagesTracker.Update lastseenmessagestracker$update = this.lastSeenMessages.generateAndApplyUpdate();
-@@ -2524,6 +_,7 @@
+@@ -2538,6 +_,7 @@
      }
  
      public void sendCommand(String p_250092_) {

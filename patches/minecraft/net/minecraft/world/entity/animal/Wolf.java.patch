@@ -40,7 +40,7 @@
              this.tame(p_336244_);
              this.navigation.stop();
              this.setTarget(null);
-@@ -625,6 +_,24 @@
+@@ -623,6 +_,24 @@
  
              return true;
          }

@@ -1,21 +1,15 @@
 --- a/net/minecraft/server/ServerAdvancementManager.java
 +++ b/net/minecraft/server/ServerAdvancementManager.java
-@@ -26,8 +_,17 @@
+@@ -26,7 +_,12 @@
      private AdvancementTree tree = new AdvancementTree();
      private final HolderLookup.Provider registries;
  
 +    /** @deprecated Forge: use {@linkplain ServerAdvancementManager#ServerAdvancementManager(net.minecraftforge.common.crafting.conditions.ICondition.IContext) constructor with context}. */
      public ServerAdvancementManager(HolderLookup.Provider p_336198_) {
--        super(p_336198_, Advancement.CODEC, Registries.elementsDirPath(Registries.ADVANCEMENT));
 +        this(p_336198_, net.minecraftforge.common.crafting.conditions.ICondition.IContext.EMPTY);
 +    }
 +
 +    public ServerAdvancementManager(HolderLookup.Provider p_336198_, net.minecraftforge.common.crafting.conditions.ICondition.IContext context) {
-+        super(
-+            p_336198_.createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE)
-+                .<com.mojang.serialization.DynamicOps<com.google.gson.JsonElement>>withContext(
-+                    net.minecraftforge.common.crafting.conditions.ICondition.IContext.KEY, context
-+                ), Advancement.CODEC, Registries.elementsDirPath(Registries.ADVANCEMENT));
+         super(p_336198_, Advancement.CODEC, Registries.ADVANCEMENT);
          this.registries = p_336198_;
      }
- 

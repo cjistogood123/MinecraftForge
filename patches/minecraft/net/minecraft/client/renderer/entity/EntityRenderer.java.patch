@@ -12,7 +12,7 @@
          }
      }
  
-@@ -268,7 +_,7 @@
+@@ -272,7 +_,7 @@
          }
  
          p_367427_.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(p_367571_);

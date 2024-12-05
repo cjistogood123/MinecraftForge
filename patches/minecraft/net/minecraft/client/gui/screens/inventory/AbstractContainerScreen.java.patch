@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/gui/screens/inventory/AbstractContainerScreen.java
 +++ b/net/minecraft/client/gui/screens/inventory/AbstractContainerScreen.java
-@@ -108,6 +_,7 @@
+@@ -106,6 +_,7 @@
          int i = this.leftPos;
          int j = this.topPos;
          super.render(p_283479_, p_283661_, p_281248_, p_281886_);
@@ -8,7 +8,7 @@
          p_283479_.pose().pushPose();
          p_283479_.pose().translate((float)i, (float)j, 0.0F);
          Slot slot = this.hoveredSlot;
-@@ -119,6 +_,8 @@
+@@ -117,6 +_,8 @@
              this.onStopHovering(slot);
          }
  
@@ -17,7 +17,7 @@
          this.renderLabels(p_283479_, p_283661_, p_281248_);
          ItemStack itemstack = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
          if (!itemstack.isEmpty()) {
-@@ -199,7 +_,7 @@
+@@ -197,7 +_,7 @@
              ItemStack itemstack = this.hoveredSlot.getItem();
              if (this.menu.getCarried().isEmpty() || this.showTooltipWithItemInHand(itemstack)) {
                  p_283594_.renderTooltip(
@@ -26,7 +26,7 @@
                  );
              }
          }
-@@ -217,7 +_,8 @@
+@@ -215,7 +_,8 @@
          p_282567_.pose().pushPose();
          p_282567_.pose().translate(0.0F, 0.0F, 232.0F);
          p_282567_.renderItem(p_281330_, p_281772_, p_281689_);
@@ -36,7 +36,7 @@
          p_282567_.pose().popPose();
      }
  
-@@ -324,7 +_,8 @@
+@@ -321,7 +_,8 @@
          if (super.mouseClicked(p_97748_, p_97749_, p_97750_)) {
              return true;
          } else {
@@ -46,7 +46,7 @@
              Slot slot = this.getHoveredSlot(p_97748_, p_97749_);
              long i = Util.getMillis();
              this.doubleclick = this.lastClickSlot == slot && i - this.lastClickTime < 250L && this.lastClickButton == p_97750_;
-@@ -335,6 +_,7 @@
+@@ -332,6 +_,7 @@
                  int j = this.leftPos;
                  int k = this.topPos;
                  boolean flag1 = this.hasClickedOutside(p_97748_, p_97749_, j, k, p_97750_);
@@ -54,7 +54,7 @@
                  int l = -1;
                  if (slot != null) {
                      l = slot.index;
-@@ -360,7 +_,7 @@
+@@ -357,7 +_,7 @@
                          }
                      } else if (!this.isQuickCrafting) {
                          if (this.menu.getCarried().isEmpty()) {
@@ -63,7 +63,7 @@
                                  this.slotClicked(slot, l, p_97750_, ClickType.CLONE);
                              } else {
                                  boolean flag2 = l != -999
-@@ -388,7 +_,7 @@
+@@ -385,7 +_,7 @@
                                  this.quickCraftingType = 0;
                              } else if (p_97750_ == 1) {
                                  this.quickCraftingType = 1;
@@ -72,7 +72,7 @@
                                  this.quickCraftingType = 2;
                              }
                          }
-@@ -467,10 +_,13 @@
+@@ -464,10 +_,13 @@
  
      @Override
      public boolean mouseReleased(double p_97812_, double p_97813_, int p_97814_) {
@@ -86,7 +86,7 @@
          int k = -1;
          if (slot != null) {
              k = slot.index;
-@@ -487,7 +_,7 @@
+@@ -484,7 +_,7 @@
                          if (slot2 != null
                              && slot2.mayPickup(this.minecraft.player)
                              && slot2.hasItem()
@@ -95,7 +95,7 @@
                              && AbstractContainerMenu.canItemQuickReplace(slot2, this.lastQuickMoved, true)) {
                              this.slotClicked(slot2, slot2.index, p_97814_, ClickType.QUICK_MOVE);
                          }
-@@ -551,7 +_,7 @@
+@@ -548,7 +_,7 @@
  
                  this.slotClicked(null, -999, AbstractContainerMenu.getQuickcraftMask(2, this.quickCraftingType), ClickType.QUICK_CRAFT);
              } else if (!this.menu.getCarried().isEmpty()) {
@@ -104,7 +104,7 @@
                      this.slotClicked(slot, k, p_97814_, ClickType.CLONE);
                  } else {
                      boolean flag1 = k != -999
-@@ -631,9 +_,10 @@
+@@ -628,9 +_,10 @@
  
      @Override
      public boolean keyPressed(int p_97765_, int p_97766_, int p_97767_) {
@@ -116,7 +116,7 @@
              this.onClose();
              return true;
          } else {
-@@ -707,4 +_,11 @@
+@@ -704,4 +_,11 @@
  
          super.onClose();
      }

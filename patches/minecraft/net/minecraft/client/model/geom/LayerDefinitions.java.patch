@@ -1,8 +1,8 @@
 --- a/net/minecraft/client/model/geom/LayerDefinitions.java
 +++ b/net/minecraft/client/model/geom/LayerDefinitions.java
-@@ -449,6 +_,7 @@
-             builder.put(ModelLayers.createWallSignModelName(p_357774_), layerdefinition54);
-             builder.put(ModelLayers.createHangingSignModelName(p_357774_), layerdefinition55);
+@@ -464,6 +_,7 @@
+                 builder.put(ModelLayers.createHangingSignModelName(p_374591_, hangingsignrenderer$attachmenttype), layerdefinition55);
+             }
          });
 +        net.minecraftforge.client.ForgeHooksClient.loadLayerDefinitions(builder);
          ImmutableMap<ModelLayerLocation, LayerDefinition> immutablemap = builder.build();

@@ -39,6 +39,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -201,20 +202,11 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
      * only on the {@linkplain LogicalSide#CLIENT logical client}.</p>
      */
     public static class CreateSkullModels extends EntityRenderersEvent {
-        private final ImmutableMap.Builder<Type, SkullModelBase> builder;
-        private final EntityModelSet entityModelSet;
+        private final ImmutableMap.Builder<Type, Function<EntityModelSet, SkullModelBase>> builder;
 
         @ApiStatus.Internal
-        public CreateSkullModels(ImmutableMap.Builder<Type, SkullModelBase> builder, EntityModelSet entityModelSet) {
+        public CreateSkullModels(ImmutableMap.Builder<Type, Function<EntityModelSet, SkullModelBase>> builder) {
             this.builder = builder;
-            this.entityModelSet = entityModelSet;
-        }
-
-        /**
-         * {@return the set of entity models}
-         */
-        public EntityModelSet getEntityModelSet() {
-            return entityModelSet;
         }
 
         /**
@@ -228,7 +220,7 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
          *              {@link EntityModelSet#bakeLayer(ModelLayerLocation)} and pass it to the constructor for
          *              {@link SkullModel}.
          */
-        public void registerSkullModel(SkullBlock.Type type, SkullModelBase model) {
+        public void registerSkullModel(SkullBlock.Type type, Function<EntityModelSet, SkullModelBase> model) {
             builder.put(type, model);
         }
     }

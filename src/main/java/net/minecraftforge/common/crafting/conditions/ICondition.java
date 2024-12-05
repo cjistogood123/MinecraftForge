@@ -10,6 +10,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.Holder;
+import net.minecraft.resources.DelegatingOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -35,6 +36,10 @@ public interface ICondition {
         /* Key used to attach this context option to a DynamicOps instance */
         @ApiStatus.Internal
         public static ResourceLocation KEY = ResourceLocation.fromNamespaceAndPath("forge", "condition_context");
+
+        default <T, O extends DelegatingOps<T>> O wrap(O ops) {
+            return ops.withContext(KEY, this);
+        }
 
         IContext EMPTY = new IContext() {
             @Override

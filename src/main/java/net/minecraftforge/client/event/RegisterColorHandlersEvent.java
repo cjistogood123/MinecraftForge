@@ -8,11 +8,8 @@ package net.minecraftforge.client.event;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.LogicalSide;
@@ -68,56 +65,6 @@ public abstract class RegisterColorHandlersEvent extends Event implements IModBu
         @SuppressWarnings("deprecation")
         public void register(BlockColor blockColor, net.minecraft.world.level.block.Block... blocks) {
             blockColors.register(blockColor, blocks);
-        }
-    }
-
-    /**
-     * Fired for registering item color handlers.
-     *
-     * <p>The block colors should only be used for referencing or delegating item colors to their respective block
-     * colors. Use {@link RegisterColorHandlersEvent.Block} for registering your block color handlers.</p>
-     *
-     * <p>This event is not {@linkplain Cancelable cancellable}, and does not {@linkplain HasResult have a result}.</p>
-     *
-     * <p>This event is fired on the {@linkplain FMLJavaModLoadingContext#getModEventBus() mod-specific event bus},
-     * only on the {@linkplain LogicalSide#CLIENT logical client}.</p>
-     */
-    public static class Item extends RegisterColorHandlersEvent {
-        private final ItemColors itemColors;
-        private final BlockColors blockColors;
-
-        @ApiStatus.Internal
-        public Item(ItemColors itemColors, BlockColors blockColors) {
-            this.itemColors = itemColors;
-            this.blockColors = blockColors;
-        }
-
-        /**
-         * {@return the item colors registry}
-         *
-         * @see ItemColors#register(ItemColor, ItemLike...)
-         */
-        public ItemColors getItemColors() {
-            return itemColors;
-        }
-
-        /**
-         * {@return the block colors registry}
-         * This should only be used for referencing or delegating item colors to their respective block colors.
-         */
-        public BlockColors getBlockColors() {
-            return blockColors;
-        }
-
-        /**
-         * Registers a {@link ItemColor} instance for a set of blocks.
-         *
-         * @param itemColor The color provider
-         * @param items     The items
-         */
-        @SuppressWarnings("deprecation")
-        public void register(ItemColor itemColor, ItemLike... items) {
-            itemColors.register(itemColor, items);
         }
     }
 

@@ -1,9 +1,9 @@
 --- a/net/minecraft/world/item/crafting/Ingredient.java
 +++ b/net/minecraft/world/item/crafting/Ingredient.java
-@@ -24,20 +_,28 @@
+@@ -23,18 +_,26 @@
  import net.minecraft.world.level.ItemLike;
  
- public class Ingredient implements Predicate<ItemStack> {
+ public class Ingredient implements StackedContents.IngredientInfo<Holder<Item>>, Predicate<ItemStack> {
 -    public static final StreamCodec<RegistryFriendlyByteBuf, Ingredient> CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM)
 +    private static final StreamCodec<RegistryFriendlyByteBuf, Ingredient> VANILLA_CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM)
          .map(Ingredient::new, p_359816_ -> p_359816_.values);
@@ -13,7 +13,7 @@
          .map(
 -            p_359814_ -> p_359814_.size() == 0 ? Optional.empty() : Optional.of(new Ingredient((HolderSet<Item>)p_359814_)),
 -            p_359815_ -> p_359815_.<HolderSet<Item>>map(p_359810_ -> p_359810_.values).orElse(HolderSet.direct())
-+            ingredient -> ingredient.items().isEmpty() ? Optional.empty() : Optional.of(ingredient),
++            ingredient -> ingredient.items().count() == 0 ? Optional.empty() : Optional.of(ingredient),
 +            ingredient -> ingredient.orElseGet(() -> Ingredient.of())
          );
      public static final Codec<HolderSet<Item>> NON_AIR_HOLDER_SET_CODEC = HolderSetCodec.create(Registries.ITEM, Item.CODEC, false);
@@ -23,8 +23,6 @@
 +    private static final com.mojang.serialization.MapCodec<Ingredient> VANILLA_MAP_CODEC = VANILLA_CODEC.fieldOf("value");
 +    public static final Codec<Ingredient> CODEC = net.minecraftforge.common.ForgeHooks.ingredientBaseCodec(VANILLA_CODEC);
 +    protected final HolderSet<Item> values;
-     @Nullable
-     private List<Holder<Item>> items;
  
      protected Ingredient(HolderSet<Item> p_368516_) {
 +        this(p_368516_, true);
@@ -35,7 +33,7 @@
          p_368516_.unwrap().ifRight(p_359817_ -> {
              if (p_359817_.isEmpty()) {
                  throw new UnsupportedOperationException("Ingredients can't be empty");
-@@ -112,5 +_,50 @@
+@@ -106,5 +_,50 @@
          } else {
              return slotdisplay;
          }

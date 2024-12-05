@@ -89,9 +89,11 @@ public interface IForgeBakedModel {
      *
      * @see #getRenderPasses(ItemStack, boolean)
      */
+    /*
     default List<RenderType> getRenderTypes(ItemStack itemStack, boolean fabulous) {
         return List.of(RenderTypeHelper.getFallbackItemRenderType(itemStack, self()));
     }
+    */
 
     /**
      * Gets an ordered list of baked models used to render this model as an item.
@@ -101,7 +103,9 @@ public interface IForgeBakedModel {
      *
      * @see #getRenderTypes(ItemStack, boolean)
      */
+    /*
     default List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
         return List.of(self());
     }
+    */
 }

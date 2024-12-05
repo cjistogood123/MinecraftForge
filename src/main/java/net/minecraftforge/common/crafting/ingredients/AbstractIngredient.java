@@ -5,6 +5,7 @@
 
 package net.minecraftforge.common.crafting.ingredients;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -32,6 +33,15 @@ public abstract class AbstractIngredient extends Ingredient {
     @Override
     public abstract IIngredientSerializer<? extends Ingredient> serializer();
 
+    @Override
+    public boolean isEmpty() {
+        return this.items().count() == 0;
+    }
+
+    @Override
+    public boolean acceptsItem(Holder<Item> item) {
+        return this.items().anyMatch(i -> i.equals(item));
+    }
 
     /* Hide vanilla ingredient static constructors to reduce errors with constructing custom ingredients */
 

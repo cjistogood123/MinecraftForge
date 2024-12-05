@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/biome/Biome.java
 +++ b/net/minecraft/world/level/biome/Biome.java
-@@ -35,8 +_,8 @@
+@@ -36,8 +_,8 @@
  public final class Biome {
      public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create(
          p_220544_ -> p_220544_.group(
@@ -11,7 +11,7 @@
                      BiomeGenerationSettings.CODEC.forGetter(p_220548_ -> p_220548_.generationSettings),
                      MobSpawnSettings.CODEC.forGetter(p_220546_ -> p_220546_.mobSettings)
                  )
-@@ -58,8 +_,10 @@
+@@ -59,8 +_,10 @@
      )
      public static final PerlinSimplexNoise BIOME_INFO_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(2345L)), ImmutableList.of(0));
      private static final int TEMPERATURE_CACHE_SIZE = 1024;
@@ -22,7 +22,7 @@
      private final MobSpawnSettings mobSettings;
      private final BiomeSpecialEffects specialEffects;
      private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> Util.make(() -> {
-@@ -71,12 +_,14 @@
+@@ -72,12 +_,14 @@
              long2floatlinkedopenhashmap.defaultReturnValue(Float.NaN);
              return long2floatlinkedopenhashmap;
          }));
@@ -37,7 +37,7 @@
      }
  
      public int getSkyColor() {
-@@ -84,7 +_,7 @@
+@@ -85,7 +_,7 @@
      }
  
      public MobSpawnSettings getMobSettings() {
@@ -46,7 +46,7 @@
      }
  
      public boolean hasPrecipitation() {
-@@ -186,7 +_,7 @@
+@@ -187,7 +_,7 @@
      }
  
      public BiomeGenerationSettings getGenerationSettings() {
@@ -55,10 +55,10 @@
      }
  
      public int getFogColor() {
-@@ -248,6 +_,31 @@
+@@ -253,6 +_,31 @@
  
-     public Optional<Music> getBackgroundMusic() {
-         return this.specialEffects.getBackgroundMusic();
+     public float getBackgroundMusicVolume() {
+         return this.specialEffects.getBackgroundMusicVolume();
 +    }
 +
 +    /**

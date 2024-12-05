@@ -36,7 +36,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -269,17 +268,6 @@ public interface IForgeBlock {
      */
     default float getExplosionResistance(BlockState state, BlockGetter level, BlockPos pos, Explosion explosion) {
         return self().getExplosionResistance();
-    }
-
-    /**
-     *
-     * Called when A user uses the creative pick block button on this block
-     *
-     * @param target The full target the player is looking at
-     * @return A ItemStack to add to the player's inventory, empty itemstack if nothing should be added.
-     */
-    default ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
-        return self().getCloneItemStack(level, pos, state);
     }
 
     /**

@@ -17,14 +17,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.common.SoundAction;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.entity.PartEntity;
@@ -70,21 +67,6 @@ public interface IForgeEntity extends ICapabilitySerializable<CompoundTag> {
      */
     default boolean shouldRiderSit() {
         return true;
-    }
-
-    /**
-     * Called when a user uses the creative pick block button on this entity.
-     *
-     * @param target The full target the player is looking at
-     * @return A ItemStack to add to the player's inventory, empty ItemStack if nothing should be added.
-     */
-    default ItemStack getPickedResult(HitResult target) {
-        var result = self().getPickResult();
-        if (result == null) {
-            var egg = ForgeSpawnEggItem.fromEntityType(self().getType());
-            result = egg == null ? ItemStack.EMPTY : new ItemStack(egg);
-        }
-        return result;
     }
 
     /**
