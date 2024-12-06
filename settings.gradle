@@ -42,8 +42,8 @@ dependencyResolutionManagement {
             // Google's InMemory File System. Used by ForgeDev Tests for now, but could be useful for a lot of things.
             library('jimfs', 'com.google.jimfs:jimfs:1.3.0')
             bundle('jimfs', ['guava', 'failureaccess'])
-            
-            version('bootstrap', '2.1.3')
+
+            version('bootstrap', '2.1.6')
             library('bootstrap',      'net.minecraftforge', 'bootstrap'     ).versionRef('bootstrap') // Needs modlauncher
             library('bootstrap-api',  'net.minecraftforge', 'bootstrap-api' ).versionRef('bootstrap')
             library('bootstrap-dev',  'net.minecraftforge', 'bootstrap-dev' ).versionRef('bootstrap')
@@ -84,12 +84,12 @@ dependencyResolutionManagement {
             library('gson', 'com.google.code.gson:gson:2.10.1')
             library('guava', 'com.google.guava:guava:32.1.2-jre')
             library('failureaccess', 'com.google.guava:failureaccess:1.0.1')
-            
+
             version('log4j', '2.22.1')
             library('log4j-api',  'org.apache.logging.log4j', 'log4j-api' ).versionRef('log4j')
             library('log4j-core', 'org.apache.logging.log4j', 'log4j-core').versionRef('log4j')
             bundle('log4j', ['log4j-api', 'log4j-core'])
-            
+
             library('apache-commons', 'org.apache.commons:commons-lang3:3.14.0')
             library('mojang-logging', 'com.mojang:logging:1.2.7')
             library('jopt-simple', 'net.sf.jopt-simple:jopt-simple:5.0.4')
