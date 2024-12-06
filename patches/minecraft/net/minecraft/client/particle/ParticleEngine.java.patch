@@ -66,7 +66,7 @@
 +
 +    public void render(Camera p_107340_, float p_107341_, MultiBufferSource.BufferSource p_377798_, @Nullable net.minecraft.client.renderer.culling.Frustum frustum) {
 +        for (ParticleRenderType particlerendertype : this.particles.keySet()) { // Forge: allow custom IParticleRenderType's
-+            if (particlerendertype == ParticleRenderType.NO_RENDER) continue;
++            if (particlerendertype.renderType() == null) continue;
              Queue<Particle> queue = this.particles.get(particlerendertype);
              if (queue != null && !queue.isEmpty()) {
 -                renderParticleType(p_107340_, p_107341_, p_377798_, particlerendertype, queue);
